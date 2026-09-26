@@ -21,7 +21,8 @@ import {
   Camera,
   ScanLine,
   Zap,
-  Sparkles
+  Sparkles,
+  Gift
 } from 'lucide-react';
 import { BusinessProfile, SubscriptionPlan } from '../types';
 import { ScanReconciliationModal, ScanResult } from './ScanReconciliationModal';
