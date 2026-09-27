@@ -1,122 +1,132 @@
-# KORA - Modern Retail Operating System & POS Platform
-
-> **KORA is the modern retail operating system that connects POS, payments, inventory, expenses, reconciliation, staff, and automated business reporting in one platform.**
+WingPOS - Modern Retail Operating System & POS Platform
+WingPOS is the modern retail operating system that connects POS, payments, inventory, expenses, reconciliation, staff, and automated business reporting in one platform.
 
 Built for retail storefronts, boutiques, supermarkets, and electronics shops across West Africa (with Paystack, MTN Mobile Money, Telecel Cash, AT Money, and Visa/Mastercard integration).
 
----
+🌟 Key Features
+1. Fast Checkout POS Terminal
+Barcode & catalog lookup with real-time inventory deduction.
 
-## 🌟 Key Features
+Accepts Cash, MTN MoMo, Telecel Cash, AT Money, and Visa/Mastercard.
 
-1. **Fast Checkout POS Terminal**
-   - Barcode & catalog lookup, real-time inventory deduction.
-   - Accepts Cash, MTN MoMo, Telecel Cash, AT Money, and Visa/Mastercard.
-   - Auto-generated customer receipts with QR verification.
+Auto-generated customer receipts with QR verification.
 
-2. **Automated WhatsApp Daily Close Reports**
-   - Dispatches a comprehensive end-of-day financial close report directly to the shop owner's WhatsApp every evening.
-   - Summarizes total sales, cash collected, Mobile Money settlements, card settlements, expenses, register variance, and net cash flow.
+2. Automated WhatsApp Daily Close Reports
+Dispatches a comprehensive end-of-day summary directly to business owners via WhatsApp.
 
-3. **Cash Leakage Shield & Variance Reconciliation**
-   - End-of-day register balancing between actual physical cash counted and expected system cash.
-   - Instant variance tracking to eliminate shrinkage and protect store revenue.
+Includes total sales, payment breakdown, top-selling items, and cash reconciliation.
 
-4. **Real-Time Stock & Restock Alerts**
-   - Inventory tracking with low-stock warnings before items sell out.
+3. Real-Time Inventory Management
+Track stock levels across multiple locations.
 
-5. **Expense Tracking & Cash Ledgers**
-   - Record petty cash, supplier payments, utilities, and daily operations expenses.
+Low-stock alerts and automated reorder suggestions.
 
-6. **Staff Management & Shifts**
-   - Multi-user cashier accounts with role-based access control.
+Bulk import/export via CSV.
 
-7. **36 Ghana & World Holiday Promotions**
-   - Pre-programmed statutory and retail holiday campaigns (Independence Day, Easter, Farmers' Day, Black Friday, Christmas) with 1-click WhatsApp customer broadcasts.
+4. Expense Tracking & Reconciliation
+Log business expenses on the go.
 
-8. **Multi-Tenant & Self-Hostable**
-   - Deploy as a multi-store platform on your own Linux VPS with Docker, PM2, and Nginx.
+Reconcile cash, mobile money, and card payments in one dashboard.
 
----
+Spot discrepancies instantly with automated matching.
 
-## 📂 Project Structure
+5. Staff & Role Management
+Assign roles (Admin, Cashier, Manager) with granular permissions.
 
-```text
-├── index.html                   # HTML entry point with KORA SEO & OpenGraph tags
-├── package.json                 # Dependencies and build scripts
-├── server.ts                    # Node.js Express backend API & static asset proxy
-├── server.js                    # Bundled production server (generated via esbuild)
-├── Dockerfile                   # Multi-stage production container build
-├── docker-compose.yml           # Docker Compose setup for VPS deployment
-├── deploy-vps.sh                # 1-click automated VPS installation script
-├── DEPLOYMENT_GUIDE.md          # Step-by-step production hosting manual
-├── src/
-│   ├── components/
-│   │   ├── LandingPage.tsx      # ⭐ KORA Landing Page (matching design mockup)
-│   │   ├── Header.tsx           # POS Navigation header & store switcher
-│   │   ├── Navigation.tsx       # Primary module tab navigation
-│   │   ├── DashboardOverview.tsx# Real-time metrics, KPI cards & revenue charts
-│   │   ├── SalesTab.tsx         # Transaction history & receipts
-│   │   ├── RecordSaleModal.tsx  # Quick POS checkout modal
-│   │   ├── StockTab.tsx         # Inventory management
-│   │   ├── ExpensesTab.tsx      # Operational expense ledger
-│   │   ├── ReconciliationTab.tsx# Daily register cash balancing
-│   │   ├── StaffTab.tsx         # Cashier & manager team accounts
-│   │   ├── AlertsTab.tsx        # Low-stock & variance notifications
-│   │   ├── CustomersPromoTab.tsx# 36 Holiday promo broadcasts & CRM
-│   │   ├── WhatsAppModal.tsx    # Automated WhatsApp report generator
-│   │   ├── BusinessLoginPage.tsx# Secure login portal
-│   │   └── OnboardingPage.tsx   # New store setup wizard
-│   ├── assets/images/           # High-resolution generated photography & products
-│   ├── types.ts                 # Full TypeScript schemas
-│   └── App.tsx                  # Main router & state coordinator
-```
+Track staff sales performance and shift activity.
 
----
+Audit logs for every transaction.
 
-## 🚀 Getting Started
+6. Business Analytics & Reporting
+Daily, weekly, and monthly sales reports.
 
-### 1. Install Dependencies
-```bash
+Profit & loss insights with expense integration.
+
+Exportable reports (PDF, CSV) for accounting.
+
+🚀 Getting Started
+Prerequisites
+Node.js >= 18
+
+PostgreSQL >= 14
+
+npm or yarn
+
+Installation
+bash
+# Clone the repository
+git clone https://github.com/your-org/wingpos.git
+cd wingpos
+
+# Install dependencies
 npm install
-```
 
-### 2. Run Local Development Server
-```bash
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your database URL, Paystack keys, WhatsApp API token, etc.
+
+# Run database migrations
+npm run migrate
+
+# Start the development server
 npm run dev
-```
-Open [http://localhost:3000](http://localhost:3000) in your browser. The landing page will load by default.
+The app will be running at http://localhost:3000.
 
-### 3. Production Build
-```bash
-npm run build
-```
-This builds both the frontend Vite bundle into `dist/` and the backend `server.js` using esbuild.
+⚙️ Environment Variables
+Variable	Description
+DATABASE_URL	PostgreSQL connection string
+PAYSTACK_SECRET_KEY	Paystack secret key for card payments
+PAYSTACK_PUBLIC_KEY	Paystack public key
+WHATSAPP_API_TOKEN	WhatsApp Business API token for daily reports
+WHATSAPP_PHONE_ID	WhatsApp Business phone number ID
+JWT_SECRET	Secret for signing authentication tokens
+APP_URL	Public URL of your deployment
+🛠️ Tech Stack
+Frontend: React / Next.js, Tailwind CSS
 
-### 4. Start Production Server
-```bash
-npm start
-```
+Backend: Node.js, Express
 
----
+Database: PostgreSQL with Prisma ORM
 
-## 🌐 Finding the Landing Page
+Payments: Paystack (Card, MoMo, Bank Transfer)
 
-The landing page component is located at:
-- **`src/components/LandingPage.tsx`**
+Messaging: WhatsApp Business Cloud API
 
-When the application loads, `src/App.tsx` routes the user to the landing page (`currentView === 'landing'`). Users can:
-- Click **"Start 14-Day Free Trial"** or **"Get Started Free"** to onboard a new store.
-- Click **"Explore Live POS Demo"** or **`pos.kora.app · Live Store Instance`** to open the live store terminal directly.
-- Click **"Sign in"** to access the cashier/owner login portal.
-- Click **"Pricing"** to view Starter, Business Pro, and Enterprise subscription tiers.
+Auth: JWT-based authentication
 
----
+📱 Supported Payment Methods
+💵 Cash
 
-## 🐳 Self-Hosting & VPS Deployment
+📱 MTN Mobile Money
 
-See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for full instructions on running KORA on any Ubuntu/Debian VPS using Docker or PM2.
+📱 Telecel Cash
 
-```bash
-# Quick Docker Compose deployment
-docker compose up -d --build
-```
+📱 AT Money
+
+💳 Visa / Mastercard (via Paystack)
+
+🤝 Contributing
+Contributions are welcome! Please open an issue or submit a pull request.
+
+Fork the repo
+
+Create your feature branch (git checkout -b feature/amazing-feature)
+
+Commit your changes (git commit -m 'Add amazing feature')
+
+Push to the branch (git push origin feature/amazing-feature)
+
+Open a Pull Request
+
+📄 License
+This project is licensed under the MIT License — see the LICENSE file for details.
+
+📞 Contact & Support
+Website: wingpos.com
+
+Email: support@wingpos.com
+
+Twitter: @wingpos
+
+<p align="center">Made with ❤️ for retailers across West Africa</p>
+This response is AI-generated, for reference only.
