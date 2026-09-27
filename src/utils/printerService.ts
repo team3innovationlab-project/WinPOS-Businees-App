@@ -208,8 +208,8 @@ export class ThermalPrinterManager {
 
     slip += doubleDivider + '\n';
     slip += center('VERIFIED ACCOUNTING LEDGER') + '\n';
-    slip += center('KORA RETAIL OPERATING SYSTEM') + '\n';
-    slip += center('pos.kora.app · Ghana') + '\n\n\n';
+    slip += center('WINGPOS BUSINESS INTELLIGENCE') + '\n';
+    slip += center('wingpos.app · Ghana') + '\n\n\n';
 
     return slip;
   }

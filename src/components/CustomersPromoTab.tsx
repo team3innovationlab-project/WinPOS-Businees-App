@@ -466,7 +466,7 @@ export const CustomersPromoTab: React.FC<CustomersPromoTabProps> = ({
               <span>Notify Business Owner on WhatsApp to Approve Upcoming Holiday Promo</span>
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-3xl leading-relaxed">
-              KORA tracks all 36 Ghana statutory holidays & world shopping events, automatically writes tailored promotional broadcast copy with your custom discount or promo price, and sends a WhatsApp approval prompt directly to the business owner before broadcasting to logged store customers.
+              WingPOS tracks all 36 Ghana statutory holidays &amp; world shopping events, automatically writes tailored promotional broadcast copy with your custom discount or promo price, and sends a WhatsApp approval prompt directly to the business owner before broadcasting to logged store customers.
             </p>
           </div>
 
@@ -762,11 +762,11 @@ export const CustomersPromoTab: React.FC<CustomersPromoTabProps> = ({
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-white/80">←</span>
                     <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-white text-[10px] font-bold">
-                      K
+                      W
                     </div>
                     <div>
                       <div className="flex items-center gap-1 font-bold text-xs text-white">
-                        <span>KORA Promo Bot</span>
+                        <span>WingPOS Promo Bot</span>
                         <CheckCircle2 className="w-3 h-3 text-emerald-300 fill-emerald-300 text-white" />
                       </div>
                       <div className="text-[9px] text-emerald-100/90 leading-none">

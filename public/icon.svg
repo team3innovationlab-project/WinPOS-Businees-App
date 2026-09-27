@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="wing-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#047857" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.25" />
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#wing-grad)" />
+  <g filter="url(#shadow)">
+    <!-- Stylized WingPOS W with wing diagonals -->
+    <path d="M104 136 L164 376 h40 L256 220 L308 376 h40 L408 136 h-48 L328 300 L276 136 h-40 L184 300 L152 136 z" fill="#ffffff" />
+    <!-- Golden Accent Sparkle at wing tip -->
+    <circle cx="396" cy="140" r="18" fill="#fbbf24" />
+  </g>
+</svg>

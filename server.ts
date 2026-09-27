@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import { posStorage, hashPassword, generateToken } from './src/server/storage';
 import { RETAIL_HOLIDAYS_36 } from './src/data/holidays';
 import { generateHighConversionPromo } from './src/utils/promoGenerator';
+import { getSupabaseHealth } from './src/server/supabaseDb';
 
 dotenv.config();
 
@@ -744,6 +745,39 @@ app.get('/api/vps-info', (req: Request, res: Response) => {
     environment: process.env.NODE_ENV || 'development',
     serverTime: new Date().toISOString(),
   });
+});
+
+// ==========================================
+// 11. SUPABASE DATABASE ENDPOINTS
+// ==========================================
+
+app.get('/api/supabase/status', async (req: Request, res: Response) => {
+  try {
+    const health = await getSupabaseHealth();
+    return res.json(health);
+  } catch (err: any) {
+    return res.status(500).json({
+      connected: false,
+      error: err?.message || 'Failed to inspect Supabase health',
+    });
+  }
+});
+
+app.post('/api/supabase/sync', async (req: Request, res: Response) => {
+  try {
+    const result = await posStorage.forceSupabaseFullSync();
+    const health = await getSupabaseHealth();
+    return res.json({
+      ...result,
+      health,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err: any) {
+    return res.status(500).json({
+      success: false,
+      error: err?.message || 'Failed to sync with Supabase',
+    });
+  }
 });
 
 // ==========================================

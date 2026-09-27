@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   Receipt,
   CheckCircle2,
+  CheckCircle,
   ExternalLink,
   X,
   Phone,
@@ -22,10 +23,33 @@ import {
   ScanLine,
   Zap,
   Sparkles,
-  Gift
+  Gift,
+  MessageSquare,
+  Calculator,
+  HelpCircle,
+  Menu,
+  ChevronDown,
+  ChevronUp,
+  Printer,
+  Lock,
+  DollarSign,
+  Smartphone,
+  Download,
+  Building2,
+  ShoppingBag,
+  Boxes,
+  Mail,
+  MapPin,
+  Clock,
+  Send,
+  Star,
+  Laptop,
+  WifiOff,
+  FileText
 } from 'lucide-react';
 import { BusinessProfile, SubscriptionPlan } from '../types';
 import { ScanReconciliationModal, ScanResult } from './ScanReconciliationModal';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface LandingPageProps {
   business: BusinessProfile;
@@ -49,6 +73,33 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const [showCameraScannerModal, setShowCameraScannerModal] = useState(false);
   const [lastScannedResult, setLastScannedResult] = useState<ScanResult | null>(null);
   const [billingCycle, setBillingCycle] = useState<'MONTHLY' | 'ANNUAL'>('MONTHLY');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [roiDailySales, setRoiDailySales] = useState<number>(3500);
+  const [roiStaffCount, setRoiStaffCount] = useState<number>(3);
+  const [activeFaq, setActiveFaq] = useState<number | null>(0);
+
+  // Direct Demo state
+  const [demoCart, setDemoCart] = useState<{ id: string; name: string; price: number; qty: number; category: string }[]>([
+    { id: 'item-1', name: 'iPhone Fast Charger 20W', price: 85, qty: 1, category: 'Accessories' },
+    { id: 'item-2', name: 'Royal Aroma Rice 5kg', price: 140, qty: 1, category: 'Grocery' },
+  ]);
+  const [demoPaymentMode, setDemoPaymentMode] = useState<'momo' | 'cash' | 'card'>('momo');
+  const [demoCustomerPhone, setDemoCustomerPhone] = useState('0244 567 890');
+  const [demoReceiptSent, setDemoReceiptSent] = useState(false);
+  const [demoOrderCompleted, setDemoOrderCompleted] = useState(false);
+
+  // App Install Tab
+  const [installDeviceTab, setInstallDeviceTab] = useState<'android' | 'ios' | 'desktop'>('android');
+
+  // Contact form state
+  const [contactForm, setContactForm] = useState({
+    name: '',
+    phone: '',
+    storeName: '',
+    city: 'Accra',
+    message: '',
+  });
+  const [contactSubmitted, setContactSubmitted] = useState(false);
 
   const plans = [
     {
@@ -161,97 +212,243 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
       {/* Top Bar Navigation */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           {/* Brand Zone */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3">
             <button 
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="flex items-center gap-2 text-left group cursor-pointer focus:outline-hidden"
+              className="flex items-center gap-3 text-left group cursor-pointer focus:outline-hidden"
             >
-              <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center shadow-xs group-hover:bg-emerald-700 transition-colors">
-                <svg viewBox="0 0 24 24" className="w-5 h-5 text-white fill-current" aria-hidden="true">
+              <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center shadow-xs group-hover:bg-emerald-700 transition-colors shrink-0">
+                <svg viewBox="0 0 24 24" className="w-6 h-6 text-white fill-current" aria-hidden="true">
                   <path d="M4 4h4.5v16H4V4zm6.5 0h4.2l5.3 7.8L14.7 20h-4.3l4.8-7.5L10.5 4z" />
                 </svg>
               </div>
-              <span className="text-2xl font-black tracking-tight text-slate-900 font-sans">
-                KORA
-              </span>
+              <div className="flex flex-col">
+                <span className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 font-sans leading-none">
+                  WingPOS
+                </span>
+                <span className="text-[11px] sm:text-xs font-bold text-emerald-700 tracking-tight leading-tight mt-0.5">
+                  Retail Business Intelligence with WhatsApp Automation
+                </span>
+              </div>
             </button>
           </div>
 
-          {/* Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-8 text-sm font-semibold text-slate-600">
-            <button 
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="text-emerald-700 hover:text-emerald-800 border-b-2 border-emerald-600 pb-0.5 transition-colors cursor-pointer"
-            >
-              Home
-            </button>
+          {/* Navigation Links (Desktop) - Clean & Reduced */}
+          <nav className="hidden xl:flex items-center gap-7 text-sm font-semibold text-slate-600">
             <a 
               href="#features" 
-              className="hover:text-slate-900 transition-colors cursor-pointer"
+              className="hover:text-emerald-700 transition-colors cursor-pointer"
             >
               Features
             </a>
             <a 
-              href="#scanner" 
-              className="hover:text-emerald-700 flex items-center gap-1 transition-colors cursor-pointer"
-            >
-              <Camera className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Camera Scanner</span>
-            </a>
-            <a 
-              href="#holidays" 
-              className="hover:text-emerald-700 flex items-center gap-1 transition-colors cursor-pointer"
-            >
-              <Gift className="w-3.5 h-3.5 text-emerald-600" />
-              <span>36 Holiday Promos</span>
-            </a>
-            <button 
-              onClick={() => setShowPricingModal(true)} 
-              className="hover:text-slate-900 transition-colors cursor-pointer"
-            >
-              Pricing
-            </button>
-            <button 
-              onClick={() => setShowAboutModal(true)} 
-              className="hover:text-slate-900 transition-colors cursor-pointer"
+              href="#about" 
+              className="hover:text-emerald-700 transition-colors cursor-pointer"
             >
               About
-            </button>
-            <button 
-              onClick={() => setShowContactModal(true)} 
-              className="hover:text-slate-900 transition-colors cursor-pointer"
+            </a>
+            <a 
+              href="#contact" 
+              className="hover:text-emerald-700 transition-colors cursor-pointer"
             >
               Contact
-            </button>
+            </a>
+            <a 
+              href="#industry" 
+              className="hover:text-emerald-700 transition-colors cursor-pointer"
+            >
+              Industry
+            </a>
+            <a 
+              href="#solution" 
+              className="hover:text-emerald-700 transition-colors cursor-pointer"
+            >
+              Solution
+            </a>
+            <a 
+              href="#pricing" 
+              className="hover:text-emerald-700 transition-colors cursor-pointer"
+            >
+              Pricing &amp; Plans
+            </a>
           </nav>
 
           {/* Action Zone */}
-          <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Direct Demo CTA */}
             <button
               onClick={onNavigateToApp}
-              className="hidden sm:inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-900 font-bold text-xs px-3.5 py-2.5 rounded-full transition-colors cursor-pointer border border-slate-200 shadow-2xs"
+              className="hidden md:inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-900 font-bold text-xs px-3.5 py-2 rounded-full transition-colors cursor-pointer border border-slate-200 shadow-2xs"
+              title="Launch live interactive POS demo without signing up"
             >
               <Zap className="w-3.5 h-3.5 fill-emerald-600 text-emerald-600" />
-              <span>Launch POS Demo Direct</span>
+              <span>Direct Demo</span>
             </button>
 
+            {/* Install WingPOS App */}
+            <PWAInstallButton variant="pill" className="hidden lg:inline-flex" />
+
+            {/* Business Login */}
             <button
               onClick={onNavigateToLogin}
-              className="text-xs sm:text-sm font-semibold text-slate-700 hover:text-slate-950 transition-colors cursor-pointer px-2 py-1.5"
+              className="text-xs sm:text-sm font-bold text-slate-700 hover:text-emerald-700 transition-colors cursor-pointer px-2.5 py-1.5 rounded-lg hover:bg-slate-50"
             >
-              Sign in
+              Business Login
             </button>
 
+            {/* Start Free Trial */}
             <button
-              onClick={() => onNavigateToOnboarding('BUSINESS_PRO')}
-              className="bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs sm:text-sm font-semibold px-4 sm:px-5 py-2.5 rounded-full transition-all shadow-xs hover:shadow cursor-pointer flex items-center gap-1"
+              onClick={() => onNavigateToOnboarding('FREE_TRIAL')}
+              className="bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs sm:text-sm font-bold px-4 sm:px-5 py-2.5 rounded-full transition-all shadow-xs hover:shadow cursor-pointer flex items-center gap-1.5"
             >
-              <span>New Business? Register</span>
+              <span>Start Free Trial</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+
+            {/* Mobile menu toggle */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="xl:hidden p-2 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 cursor-pointer"
+              aria-label="Toggle navigation menu"
+            >
+              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
+
+        {/* Mobile Navigation Dropdown */}
+        {isMobileMenuOpen && (
+          <div className="xl:hidden bg-white border-b border-slate-200 px-4 pt-3 pb-6 space-y-3 shadow-lg">
+            <div className="text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">
+              WingPOS - Retail Business Intelligence with WhatsApp Automation
+            </div>
+            <div className="grid grid-cols-1 gap-1 text-sm font-semibold text-slate-700">
+              <a
+                href="#features"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="px-3 py-2 rounded-lg hover:bg-slate-100 flex items-center justify-between"
+              >
+                <span>Features</span>
+                <ChevronRight className="w-4 h-4 text-slate-400" />
+              </a>
+              <a
+                href="#about"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="px-3 py-2 rounded-lg hover:bg-slate-100 flex items-center justify-between"
+              >
+                <span>About</span>
+                <ChevronRight className="w-4 h-4 text-slate-400" />
+              </a>
+              <a
+                href="#contact"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="px-3 py-2 rounded-lg hover:bg-slate-100 flex items-center justify-between"
+              >
+                <span>Contact</span>
+                <ChevronRight className="w-4 h-4 text-slate-400" />
+              </a>
+              <a
+                href="#industry"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="px-3 py-2 rounded-lg hover:bg-slate-100 flex items-center justify-between"
+              >
+                <span>Industry</span>
+                <ChevronRight className="w-4 h-4 text-slate-400" />
+              </a>
+              <a
+                href="#solution"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="px-3 py-2 rounded-lg hover:bg-slate-100 flex items-center justify-between"
+              >
+                <span>Solution</span>
+                <ChevronRight className="w-4 h-4 text-slate-400" />
+              </a>
+              <a
+                href="#pricing"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="px-3 py-2 rounded-lg hover:bg-slate-100 flex items-center justify-between"
+              >
+                <span>Pricing &amp; Plans</span>
+                <ChevronRight className="w-4 h-4 text-slate-400" />
+              </a>
+              <a
+                href="#direct-demo"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="px-3 py-2 rounded-lg hover:bg-slate-100 flex items-center justify-between text-emerald-700"
+              >
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 fill-emerald-600 text-emerald-600" />
+                  <span>Direct Demo</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-400" />
+              </a>
+              <a
+                href="#install-app"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="px-3 py-2 rounded-lg hover:bg-slate-100 flex items-center justify-between text-emerald-700"
+              >
+                <div className="flex items-center gap-2">
+                  <Smartphone className="w-4 h-4 text-emerald-600" />
+                  <span>Install WingPOS App</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-400" />
+              </a>
+              <a
+                href="#roi-calculator"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="px-3 py-2 rounded-lg hover:bg-slate-100 flex items-center justify-between"
+              >
+                <div className="flex items-center gap-2">
+                  <Calculator className="w-4 h-4 text-emerald-600" />
+                  <span>ROI Calculator</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-400" />
+              </a>
+              <a
+                href="#faq"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="px-3 py-2 rounded-lg hover:bg-slate-100 flex items-center justify-between"
+              >
+                <span>FAQ</span>
+                <ChevronRight className="w-4 h-4 text-slate-400" />
+              </a>
+            </div>
+
+            <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  onNavigateToApp();
+                }}
+                className="w-full text-center py-2.5 font-bold text-sm text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl flex items-center justify-center gap-2"
+              >
+                <Zap className="w-4 h-4 fill-emerald-600 text-emerald-600" />
+                <span>Launch Direct Demo</span>
+              </button>
+              <PWAInstallButton variant="landing" className="w-full justify-center" />
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  onNavigateToLogin();
+                }}
+                className="w-full text-center py-2.5 font-bold text-sm text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl"
+              >
+                Business Login
+              </button>
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  onNavigateToOnboarding('FREE_TRIAL');
+                }}
+                className="w-full text-center py-2.5 font-bold text-sm text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-xs"
+              >
+                Start Free Trial
+              </button>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Hero Section */}
@@ -264,14 +461,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               {/* Category Kicker & Regional Tag */}
               <div className="space-y-2">
                 <span className="block text-[11px] font-extrabold uppercase tracking-widest text-emerald-700">
-                  THE MODERN RETAIL OPERATING SYSTEM
+                  RETAIL BUSINESS INTELLIGENCE WITH WHATSAPP AUTOMATION
                 </span>
 
                 <div className="inline-flex items-center gap-2 bg-slate-100/90 text-slate-700 px-3 py-1 rounded-full text-xs font-medium border border-slate-200/80">
                   <span className="text-sm">🇬🇭</span>
-                  <span>For West Africa</span>
+                  <span>Engineered for Africa</span>
                   <span className="text-slate-400">·</span>
-                  <span className="font-semibold text-emerald-800">Paystack MoMo & WhatsApp Enabled</span>
+                  <span className="font-semibold text-emerald-800">100% Offline POS & WhatsApp Automation</span>
                 </div>
               </div>
 
@@ -285,49 +482,57 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
               {/* Paragraph */}
               <p className="text-base text-slate-600 leading-relaxed font-normal max-w-lg">
-                KORA brings sales, expenses, stock, staff and reconciliation together in one powerful platform. Get real-time insights, automate routines, and make smarter decisions — all from one place.
+                WingPOS combines high-velocity point-of-sale, real-time inventory management, camera receipt &amp; MoMo reconciliation, and automated evening financial close reports delivered straight to your WhatsApp.
               </p>
 
               {/* Primary Call to Actions */}
               <div className="flex flex-wrap items-center gap-3 pt-2">
                 <button
-                  onClick={onNavigateToApp}
+                  onClick={() => onNavigateToOnboarding('FREE_TRIAL')}
                   className="bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-sm sm:text-base px-6 py-3.5 rounded-full transition-all shadow-sm hover:shadow-md flex items-center gap-2 cursor-pointer"
                 >
-                  <Zap className="w-4 h-4 fill-white" />
-                  <span>Launch POS Demo Direct</span>
+                  <span>Start Free Trial</span>
+                  <ArrowRight className="w-4 h-4" />
                 </button>
 
                 <button
-                  onClick={() => onNavigateToOnboarding('BUSINESS_PRO')}
-                  className="bg-white hover:bg-slate-50 text-slate-900 font-bold text-sm sm:text-base px-5 py-3.5 rounded-full border border-slate-300 transition-all flex items-center gap-2 shadow-2xs hover:shadow-xs cursor-pointer"
+                  onClick={onNavigateToApp}
+                  className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm sm:text-base px-5 py-3.5 rounded-full transition-all flex items-center gap-2 shadow-xs hover:shadow-sm cursor-pointer"
                 >
-                  <span>New Business? Register</span>
-                  <ArrowRight className="w-4 h-4 text-emerald-600" />
+                  <Zap className="w-4 h-4 fill-emerald-400 text-emerald-400" />
+                  <span>Direct Demo</span>
                 </button>
 
-                <button
-                  onClick={() => setShowCameraScannerModal(true)}
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-3.5 py-2 rounded-full transition-all cursor-pointer"
+                <a
+                  href="#install-app"
+                  className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-300 px-4 py-3 rounded-full transition-all cursor-pointer"
                 >
-                  <Camera className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>Try Camera MoMo Scanner</span>
-                </button>
+                  <Smartphone className="w-4 h-4 text-emerald-700" />
+                  <span>Install WingPOS App</span>
+                </a>
+
+                <a
+                  href="#roi-calculator"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-3.5 py-2.5 rounded-full transition-all cursor-pointer"
+                >
+                  <Calculator className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>ROI Calculator</span>
+                </a>
               </div>
 
               {/* Trust Checkmarks */}
               <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium text-slate-600 pt-1">
                 <span className="flex items-center gap-1.5">
                   <Check className="w-4 h-4 text-emerald-600 stroke-[2.5]" />
-                  No credit card required
+                  14-Day Free Trial (No Card)
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Check className="w-4 h-4 text-emerald-600 stroke-[2.5]" />
-                  Paystack & MoMo ready
+                  100% Offline Capability
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Check className="w-4 h-4 text-emerald-600 stroke-[2.5]" />
-                  Deploy on your own VPS
+                  Nightly WhatsApp Reports
                 </span>
               </div>
 
@@ -338,7 +543,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   className="group inline-flex items-center gap-2.5 bg-slate-900 hover:bg-emerald-900 text-white text-xs font-semibold px-4 py-2 rounded-full transition-all cursor-pointer shadow-xs"
                 >
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span className="font-mono text-emerald-300">pos.kora.app</span>
+                  <span className="font-mono text-emerald-300">pos.wingpos.app</span>
                   <span className="text-slate-400">·</span>
                   <span>Live Store Instance: {business.name}</span>
                   <ArrowRight className="w-3.5 h-3.5 text-emerald-400 group-hover:translate-x-0.5 transition-transform" />
@@ -379,11 +584,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-bold text-white/90">←</span>
                           <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-white text-[10px] font-bold">
-                            K
+                            W
                           </div>
                           <div>
                             <div className="flex items-center gap-1 font-bold text-xs text-white">
-                              <span>KORA</span>
+                              <span>WingPOS</span>
                               <CheckCircle2 className="w-3 h-3 text-emerald-300 fill-emerald-300 text-white" />
                             </div>
                             <div className="text-[9px] text-emerald-100/90 leading-none">
@@ -488,9 +693,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       <div className="bg-slate-900 text-white px-3 py-2.5 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div className="w-4 h-4 rounded bg-emerald-500 flex items-center justify-center text-[9px] font-bold text-slate-900">
-                            K
+                            W
                           </div>
-                          <span className="font-bold text-xs tracking-tight">KORA POS</span>
+                          <span className="font-bold text-xs tracking-tight">WingPOS</span>
                         </div>
                         <div className="bg-slate-800 px-2 py-1 rounded text-[10px] text-slate-300 flex items-center gap-1">
                           <span>🔍</span>
@@ -596,6 +801,422 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </div>
             </div>
 
+          </div>
+        </div>
+      </section>
+
+      {/* DIRECT DEMO INTERACTIVE SECTION */}
+      <section id="direct-demo" className="py-16 lg:py-24 bg-gradient-to-b from-white via-[#f4fbf7] to-white border-t border-slate-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
+            <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
+              <Zap className="w-3.5 h-3.5 fill-emerald-600 text-emerald-600" />
+              <span>DIRECT DEMO · ZERO SETUP REQUIRED</span>
+            </div>
+            <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
+              Test-drive the WingPOS register in 10 seconds.
+            </h2>
+            <p className="text-base text-slate-600">
+              No account creation, no password, no credit card. Tap products below to build a quick sale, split cash and MoMo payments, and simulate sending a WhatsApp digital receipt.
+            </p>
+          </div>
+
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden grid grid-cols-1 lg:grid-cols-12">
+            {/* Left: Quick Tap Products Catalog */}
+            <div className="lg:col-span-7 p-6 sm:p-8 bg-slate-50/70 border-b lg:border-b-0 lg:border-r border-slate-200">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Tap to Add Items to Cart
+                </span>
+                <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                  Sample Inventory SKU
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                {[
+                  { id: 'demo-1', name: 'iPhone 20W Fast Charger', price: 85, category: 'Accessories', icon: '🔌' },
+                  { id: 'demo-2', name: 'Royal Aroma Rice 5kg', price: 140, category: 'Grocery', icon: '🌾' },
+                  { id: 'demo-3', name: 'Panadol Extra 20 Tablets', price: 22, category: 'Pharmacy', icon: '💊' },
+                  { id: 'demo-4', name: 'Milo Chocolate Tin 400g', price: 48, category: 'Beverages', icon: '☕' },
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setDemoCart((prev) => {
+                        const exists = prev.find((p) => p.id === item.id);
+                        if (exists) {
+                          return prev.map((p) => p.id === item.id ? { ...p, qty: p.qty + 1 } : p);
+                        }
+                        return [...prev, { ...item, qty: 1 }];
+                      });
+                      setDemoOrderCompleted(false);
+                    }}
+                    className="p-3.5 bg-white rounded-2xl border border-slate-200 hover:border-emerald-500 hover:shadow-md transition-all text-left group cursor-pointer flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="text-xl mb-1">{item.icon}</div>
+                      <div className="font-bold text-xs sm:text-sm text-slate-800 group-hover:text-emerald-700 transition-colors line-clamp-1">
+                        {item.name}
+                      </div>
+                      <div className="text-[11px] text-slate-400">{item.category}</div>
+                    </div>
+                    <div className="mt-2 flex items-center justify-between pt-2 border-t border-slate-100">
+                      <span className="font-mono font-bold text-xs text-slate-900">GH₵ {item.price.toFixed(2)}</span>
+                      <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 group-hover:bg-emerald-600 group-hover:text-white px-2 py-0.5 rounded-full transition-colors">
+                        + Add
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Barcode scanner test banner */}
+              <div className="p-4 bg-emerald-950 text-white rounded-2xl flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-800/80 flex items-center justify-center text-emerald-300 shrink-0">
+                    <ScanLine className="w-5 h-5 animate-pulse" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-white">Need full terminal testing?</div>
+                    <div className="text-[11px] text-emerald-200">Test barcode cameras, staff PINs, and Bluetooth printing</div>
+                  </div>
+                </div>
+                <button
+                  onClick={onNavigateToApp}
+                  className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-xs cursor-pointer shrink-0"
+                >
+                  Launch Full POS
+                </button>
+              </div>
+            </div>
+
+            {/* Right: Live Cart & Instant WhatsApp Receipt preview */}
+            <div className="lg:col-span-5 p-6 sm:p-8 flex flex-col justify-between bg-white">
+              <div>
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+                  <span className="font-extrabold text-sm text-slate-900 flex items-center gap-1.5">
+                    <ShoppingBag className="w-4 h-4 text-emerald-600" />
+                    <span>Demo Register Cart ({demoCart.reduce((sum, item) => sum + item.qty, 0)})</span>
+                  </span>
+                  {demoCart.length > 0 && (
+                    <button
+                      onClick={() => setDemoCart([])}
+                      className="text-[11px] font-semibold text-rose-500 hover:underline cursor-pointer"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+
+                {/* Items List */}
+                <div className="space-y-2 max-h-48 overflow-y-auto pr-1 mb-4">
+                  {demoCart.length === 0 ? (
+                    <div className="text-center py-8 text-xs text-slate-400">
+                      Cart is empty. Tap any sample product on the left to test.
+                    </div>
+                  ) : (
+                    demoCart.map((item) => (
+                      <div key={item.id} className="flex items-center justify-between p-2 bg-slate-50 rounded-xl text-xs">
+                        <div className="flex-1 mr-2">
+                          <div className="font-bold text-slate-800 line-clamp-1">{item.name}</div>
+                          <div className="text-slate-400 font-mono text-[10px]">GH₵ {item.price.toFixed(2)} each</div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => {
+                              setDemoCart((prev) =>
+                                prev
+                                  .map((p) => p.id === item.id ? { ...p, qty: p.qty - 1 } : p)
+                                  .filter((p) => p.qty > 0)
+                              );
+                            }}
+                            className="w-5 h-5 rounded bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs hover:bg-slate-300"
+                          >
+                            -
+                          </button>
+                          <span className="font-bold font-mono text-xs w-4 text-center">{item.qty}</span>
+                          <button
+                            onClick={() => {
+                              setDemoCart((prev) =>
+                                prev.map((p) => p.id === item.id ? { ...p, qty: p.qty + 1 } : p)
+                              );
+                            }}
+                            className="w-5 h-5 rounded bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs hover:bg-slate-300"
+                          >
+                            +
+                          </button>
+                          <span className="font-bold font-mono text-slate-900 w-16 text-right">
+                            GH₵ {(item.price * item.qty).toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Payment Selection */}
+                <div className="mb-4 space-y-1.5">
+                  <span className="text-[11px] font-bold text-slate-600 block">Tender Method:</span>
+                  <div className="grid grid-cols-3 gap-2 text-xs font-bold">
+                    <button
+                      onClick={() => setDemoPaymentMode('momo')}
+                      className={`py-2 px-2 rounded-xl border text-center transition-all cursor-pointer ${
+                        demoPaymentMode === 'momo'
+                          ? 'border-yellow-500 bg-yellow-50 text-yellow-900 font-black ring-1 ring-yellow-400'
+                          : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      MTN MoMo
+                    </button>
+                    <button
+                      onClick={() => setDemoPaymentMode('cash')}
+                      className={`py-2 px-2 rounded-xl border text-center transition-all cursor-pointer ${
+                        demoPaymentMode === 'cash'
+                          ? 'border-emerald-500 bg-emerald-50 text-emerald-900 font-black ring-1 ring-emerald-400'
+                          : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      Cash
+                    </button>
+                    <button
+                      onClick={() => setDemoPaymentMode('card')}
+                      className={`py-2 px-2 rounded-xl border text-center transition-all cursor-pointer ${
+                        demoPaymentMode === 'card'
+                          ? 'border-blue-500 bg-blue-50 text-blue-900 font-black ring-1 ring-blue-400'
+                          : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      Visa Card
+                    </button>
+                  </div>
+                </div>
+
+                {/* WhatsApp Receipt Toggle */}
+                <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100 mb-4 text-xs">
+                  <label className="flex items-center gap-2 font-bold text-emerald-900 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={demoReceiptSent}
+                      onChange={(e) => setDemoReceiptSent(e.target.checked)}
+                      className="accent-emerald-600 rounded"
+                    />
+                    <MessageSquare className="w-3.5 h-3.5 text-emerald-700" />
+                    <span>Send digital receipt to customer's WhatsApp</span>
+                  </label>
+                  {demoReceiptSent && (
+                    <input
+                      type="text"
+                      value={demoCustomerPhone}
+                      onChange={(e) => setDemoCustomerPhone(e.target.value)}
+                      placeholder="Customer phone (e.g. 0244 567 890)"
+                      className="mt-2 w-full text-xs p-2 rounded-lg bg-white border border-emerald-200 text-slate-800"
+                    />
+                  )}
+                </div>
+              </div>
+
+              {/* Total & Checkout */}
+              <div>
+                <div className="flex justify-between items-center py-2 border-t border-slate-100 text-sm">
+                  <span className="font-bold text-slate-600">Total Due:</span>
+                  <span className="font-mono text-xl font-black text-slate-900">
+                    GH₵ {demoCart.reduce((sum, item) => sum + item.price * item.qty, 0).toFixed(2)}
+                  </span>
+                </div>
+
+                {demoOrderCompleted ? (
+                  <div className="p-3 bg-emerald-600 text-white rounded-xl text-center text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm">
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Sale Recorded &amp; Reconciled! WhatsApp Receipt Queued.</span>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    <button
+                      onClick={() => setDemoOrderCompleted(true)}
+                      disabled={demoCart.length === 0}
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-xs py-3 rounded-xl transition-all shadow-xs cursor-pointer text-center"
+                    >
+                      Complete Sale (Demo)
+                    </button>
+                    <button
+                      onClick={onNavigateToApp}
+                      className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs py-3 rounded-xl transition-all shadow-xs cursor-pointer text-center flex items-center justify-center gap-1"
+                    >
+                      <span>Open Full POS</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* INSTALL WINGPOS APP SECTION */}
+      <section id="install-app" className="py-16 lg:py-24 bg-white border-t border-slate-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
+            <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
+              <Smartphone className="w-3.5 h-3.5" />
+              <span>OFFLINE PROGRESSIVE WEB APP</span>
+            </div>
+            <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
+              Install WingPOS on your phone, tablet, or PC.
+            </h2>
+            <p className="text-base text-slate-600">
+              Zero App Store friction. Works 100% offline, launches instantly from your home screen, and connects directly to thermal receipt printers.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center mb-6">
+            {/* Left 4 Pillars */}
+            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center mb-3">
+                  <WifiOff className="w-5 h-5" />
+                </div>
+                <h3 className="font-bold text-base text-slate-900 mb-1">100% Offline Capability</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Never stop ringing sales when cellular networks go down or fiber cables cut. WingPOS securely caches everything locally and synchronizes automatically upon reconnection.
+                </p>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200">
+                <div className="w-10 h-10 rounded-xl bg-sky-100 text-sky-800 flex items-center justify-center mb-3">
+                  <Zap className="w-5 h-5 fill-sky-600 text-sky-600" />
+                </div>
+                <h3 className="font-bold text-base text-slate-900 mb-1">Instant 2-Second Launch</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  No 150MB App Store downloads. Tap Install to get a native standalone application icon on your phone home screen or Windows taskbar.
+                </p>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center mb-3">
+                  <Printer className="w-5 h-5" />
+                </div>
+                <h3 className="font-bold text-base text-slate-900 mb-1">Thermal Receipt Printing</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Connect seamlessly to 58mm &amp; 80mm ESC/POS thermal printers via Bluetooth or Wi-Fi. Print customer receipts and end-of-day register audit slips.
+                </p>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200">
+                <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center mb-3">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <h3 className="font-bold text-base text-slate-900 mb-1">Ultra-Low Data Overhead</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Engineered specifically for African mobile networks. The app uses minimal cache and lightweight updates for daily operation.
+                </p>
+              </div>
+            </div>
+
+            {/* Right: Installation Card & Interactive Tabs */}
+            <div className="lg:col-span-5 bg-gradient-to-br from-slate-900 to-[#042821] text-white p-7 sm:p-8 rounded-3xl shadow-xl space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500 text-slate-950 flex items-center justify-center font-black text-xl shadow-lg shrink-0">
+                  W
+                </div>
+                <div>
+                  <div className="font-black text-lg text-white">WingPOS Retail App</div>
+                  <div className="text-xs text-emerald-300">Version 2.4 · Offline Ready</div>
+                </div>
+              </div>
+
+              {/* Platform Selector */}
+              <div className="bg-white/10 p-1 rounded-xl flex items-center text-xs font-bold">
+                <button
+                  onClick={() => setInstallDeviceTab('android')}
+                  className={`flex-1 py-2 rounded-lg transition-all ${
+                    installDeviceTab === 'android' ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-300 hover:text-white'
+                  }`}
+                >
+                  Android
+                </button>
+                <button
+                  onClick={() => setInstallDeviceTab('ios')}
+                  className={`flex-1 py-2 rounded-lg transition-all ${
+                    installDeviceTab === 'ios' ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-300 hover:text-white'
+                  }`}
+                >
+                  iPhone / iPad
+                </button>
+                <button
+                  onClick={() => setInstallDeviceTab('desktop')}
+                  className={`flex-1 py-2 rounded-lg transition-all ${
+                    installDeviceTab === 'desktop' ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-300 hover:text-white'
+                  }`}
+                >
+                  PC / Mac
+                </button>
+              </div>
+
+              {/* Instructions per device */}
+              <div className="text-xs text-slate-300 space-y-2.5 bg-black/20 p-4 rounded-xl border border-white/10">
+                {installDeviceTab === 'android' && (
+                  <>
+                    <div className="flex items-start gap-2">
+                      <span className="font-mono text-emerald-400 font-bold">1.</span>
+                      <span>Open Chrome on your Android smartphone or tablet.</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="font-mono text-emerald-400 font-bold">2.</span>
+                      <span>Click the <strong>Install WingPOS App</strong> button below or tap the 3-dots menu.</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="font-mono text-emerald-400 font-bold">3.</span>
+                      <span>Tap <strong>Add to Home screen</strong> to launch like a native app anytime!</span>
+                    </div>
+                  </>
+                )}
+                {installDeviceTab === 'ios' && (
+                  <>
+                    <div className="flex items-start gap-2">
+                      <span className="font-mono text-emerald-400 font-bold">1.</span>
+                      <span>Open this page in <strong>Safari</strong> on your iPhone or iPad.</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="font-mono text-emerald-400 font-bold">2.</span>
+                      <span>Tap the <strong>Share</strong> button (box with upward arrow) at the bottom.</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="font-mono text-emerald-400 font-bold">3.</span>
+                      <span>Scroll down and tap <strong>Add to Home Screen</strong>. Done!</span>
+                    </div>
+                  </>
+                )}
+                {installDeviceTab === 'desktop' && (
+                  <>
+                    <div className="flex items-start gap-2">
+                      <span className="font-mono text-emerald-400 font-bold">1.</span>
+                      <span>Open this page in Google Chrome, Microsoft Edge, or Brave on Windows or macOS.</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="font-mono text-emerald-400 font-bold">2.</span>
+                      <span>Click the install computer/download icon on the right side of the address bar.</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="font-mono text-emerald-400 font-bold">3.</span>
+                      <span>WingPOS will open in its own clean window without browser tabs!</span>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Install Trigger Button */}
+              <div className="space-y-2">
+                <PWAInstallButton variant="landing" className="w-full justify-center bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3 rounded-xl text-sm shadow-md" />
+                <button
+                  onClick={onNavigateToApp}
+                  className="w-full text-center text-xs text-emerald-300 hover:text-white underline cursor-pointer py-1 font-semibold"
+                >
+                  Or continue in browser mode →
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -924,9 +1545,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     <div className="bg-slate-900 text-white px-4 py-2.5 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className="w-4 h-4 rounded bg-emerald-500 flex items-center justify-center text-[9px] font-bold text-slate-900">
-                          K
+                          W
                         </div>
-                        <span className="font-bold text-xs tracking-tight">KORA</span>
+                        <span className="font-bold text-xs tracking-tight">WingPOS</span>
                       </div>
                       <div className="bg-slate-800 px-3 py-1 rounded text-[10px] text-slate-300">
                         Search products...
@@ -1020,7 +1641,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   {/* Printed Receipt Paper Mockup */}
                   <div className="absolute -bottom-10 right-2 w-40 bg-white p-2.5 rounded-lg shadow-xl border border-slate-200 text-[8px] font-mono text-slate-700 rotate-3 z-20">
                     <div className="text-center pb-1 border-b border-dashed border-slate-300">
-                      <span className="font-bold text-slate-900 block text-[9px]">KORA RECEIPT</span>
+                      <span className="font-bold text-slate-900 block text-[9px]">WINGPOS RECEIPT</span>
                       <span className="text-[7px] text-slate-500">Techwokx Ghana</span>
                     </div>
                     <div className="py-1 space-y-0.5">
@@ -1074,7 +1695,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </h2>
             
             <p className="text-base text-slate-600 leading-relaxed font-normal">
-              Capture seasonal shopping rushes with zero manual marketing hassle. KORA proactively notifies the business owner on WhatsApp before upcoming holidays with auto-generated festive copy, customizable discounts or promo pricing, and 1-tap approval directly via WhatsApp.
+              Capture seasonal shopping rushes with zero manual marketing hassle. WingPOS proactively notifies the business owner on WhatsApp before upcoming holidays with auto-generated festive copy, customizable discounts or promo pricing, and 1-tap approval directly via WhatsApp.
             </p>
           </div>
 
@@ -1129,7 +1750,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                         1
                       </div>
                       <div>
-                        <strong className="text-slate-900">3-Day Proactive WhatsApp Reminder:</strong> KORA detects the upcoming holiday and sends a WhatsApp prompt directly to the owner's phone.
+                        <strong className="text-slate-900">3-Day Proactive WhatsApp Reminder:</strong> WingPOS detects the upcoming holiday and sends a WhatsApp prompt directly to the owner's phone.
                       </div>
                     </div>
 
@@ -1190,11 +1811,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-white/80">←</span>
                         <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-white text-[10px] font-bold">
-                          K
+                          W
                         </div>
                         <div>
                           <div className="flex items-center gap-1 font-bold text-xs text-white">
-                            <span>KORA Holiday Bot</span>
+                            <span>WingPOS Holiday Bot</span>
                             <CheckCircle2 className="w-3 h-3 text-emerald-300 fill-emerald-300 text-white" />
                           </div>
                           <div className="text-[9px] text-emerald-100/90 leading-none">
@@ -1286,43 +1907,957 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
       </section>
 
-      {/* Bottom Revenue Protection Banner */}
+      {/* 1. WHATSAPP REPORTS SECTION */}
+      <section id="whatsapp-reports" className="py-16 lg:py-24 bg-gradient-to-b from-[#f4faf7] via-white to-[#fbfdfc] border-t border-slate-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
+            <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span>Automated Daily Close &amp; WhatsApp Reports</span>
+            </div>
+            <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
+              Know your shop numbers before you sleep — delivered straight to WhatsApp.
+            </h2>
+            <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
+              No more manual calculators, lost receipt books, or calling cashiers late at night. 
+              WingPOS automatically calculates gross sales, payment channels, store expenses, and cash-in-drawer balance, sending the owner a complete executive summary.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            {/* Left: Key Features of WhatsApp Reporting */}
+            <div className="lg:col-span-6 space-y-6">
+              <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs hover:border-emerald-200 transition-colors">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+                    <Receipt className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-900 text-base">Channel-by-Channel Breakdown</h3>
+                    <p className="text-sm text-slate-600 mt-1 leading-relaxed">
+                      Instant separation of Physical Cash, MTN MoMo, Telecel Cash, AT Money, and Visa/Mastercard (Paystack) totals so you can reconcile bank and drawer deposits in seconds.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs hover:border-emerald-200 transition-colors">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+                    <ShieldCheck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-900 text-base">Instant Cash Discrepancy &amp; Leakage Alert</h3>
+                    <p className="text-sm text-slate-600 mt-1 leading-relaxed">
+                      Flags physical till shortages or unrecorded disbursements immediately. If expected cash doesn't match physical count, WingPOS highlights the exact variance.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs hover:border-emerald-200 transition-colors">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+                    <Users className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-900 text-base">Staff &amp; Cashier Performance</h3>
+                    <p className="text-sm text-slate-600 mt-1 leading-relaxed">
+                      Track which cashier recorded which transactions using their personal 4-digit PIN, eliminating shift confusion and promoting staff accountability.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2 flex items-center gap-4">
+                <button
+                  onClick={() => onNavigateToOnboarding('BUSINESS_PRO')}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm px-6 py-3.5 rounded-full shadow-xs hover:shadow transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  <span>Get WhatsApp Reports for Your Shop</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Right: WhatsApp Phone Simulation */}
+            <div className="lg:col-span-6 flex justify-center">
+              <div className="w-full max-w-md bg-[#efeae2] rounded-[36px] p-3 shadow-2xl border-4 border-slate-800">
+                {/* Simulated Phone Top Notch */}
+                <div className="bg-slate-900 text-white text-[11px] py-1.5 px-4 rounded-t-[28px] flex items-center justify-between">
+                  <span className="font-semibold">9:01 PM</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    <span className="text-[10px] text-slate-300">WhatsApp Business</span>
+                  </div>
+                </div>
+
+                {/* WhatsApp Chat Header */}
+                <div className="bg-[#075e54] text-white p-3 flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-emerald-400 flex items-center justify-center text-slate-950 font-black text-sm">
+                    W
+                  </div>
+                  <div>
+                    <div className="font-bold text-sm leading-tight">WingPOS Retail Bot</div>
+                    <div className="text-[10px] text-emerald-200">Daily Close &amp; Reconciliation</div>
+                  </div>
+                </div>
+
+                {/* WhatsApp Chat Area */}
+                <div className="p-3.5 space-y-3 font-sans text-xs">
+                  <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/60 space-y-2">
+                    <div className="font-black text-slate-900 text-sm border-b border-slate-100 pb-1.5 flex items-center justify-between">
+                      <span>📊 DAILY REGISTER CLOSE REPORT</span>
+                      <span className="text-[10px] font-normal text-slate-500">Today</span>
+                    </div>
+
+                    <p className="text-[11px] text-slate-600">
+                      Store: <strong className="text-slate-900">{business.name || 'Accra Central Supermarket'}</strong><br />
+                      Closed by: <strong className="text-slate-900">Kofi Mensah (PIN: 1102)</strong>
+                    </p>
+
+                    <div className="bg-slate-50 p-2.5 rounded-xl space-y-1 text-[11px]">
+                      <div className="flex justify-between font-bold text-slate-900">
+                        <span>Total Gross Sales:</span>
+                        <span className="text-emerald-700">GH₵ 3,845.00</span>
+                      </div>
+                      <div className="flex justify-between text-slate-600">
+                        <span>• Cash in Till:</span>
+                        <span>GH₵ 1,420.00</span>
+                      </div>
+                      <div className="flex justify-between text-slate-600">
+                        <span>• MTN MoMo &amp; Telecel:</span>
+                        <span>GH₵ 1,925.00</span>
+                      </div>
+                      <div className="flex justify-between text-slate-600">
+                        <span>• Visa / Mastercard (Paystack):</span>
+                        <span>GH₵ 500.00</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-amber-50/70 p-2.5 rounded-xl space-y-1 text-[11px] border border-amber-100">
+                      <div className="flex justify-between text-amber-900 font-semibold">
+                        <span>Shop Expenses Paid:</span>
+                        <span>- GH₵ 220.00</span>
+                      </div>
+                      <div className="flex justify-between font-black text-slate-900 pt-1 border-t border-amber-200">
+                        <span>Net Cash Profit:</span>
+                        <span className="text-emerald-700">GH₵ 3,625.00</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-emerald-50 text-emerald-900 p-2 rounded-xl text-[10px] font-bold flex items-center gap-1.5 border border-emerald-200">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>Reconciliation Verified: 0.00 discrepancy in cash till!</span>
+                    </div>
+
+                    <div className="text-[9px] text-slate-400 text-right">9:01 PM ✓✓</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SOLUTION SECTION */}
+      <section id="solution" className="py-16 lg:py-24 bg-gradient-to-b from-[#f8faf9]/50 via-white to-[#f0f9f5]/50 border-t border-slate-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
+            <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>THE WINGPOS SOLUTION</span>
+            </div>
+            <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
+              Built to solve real retail headaches.
+            </h2>
+            <p className="text-base text-slate-600">
+              How WingPOS transforms chaotic store counters into predictable, automated profitability.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Solution 1 */}
+            <div className="p-7 rounded-3xl bg-white border border-slate-200 shadow-xs hover:shadow-md transition-all space-y-4">
+              <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold text-sm">
+                01
+              </div>
+              <div className="space-y-1">
+                <div className="text-xs font-bold text-rose-600 uppercase tracking-wider">The Problem: Cash &amp; MoMo Leakage</div>
+                <h3 className="text-xl font-bold text-slate-900">End-of-day drawer variance and disputed customer transfers</h3>
+              </div>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Cashiers miscalculate change, customers show fabricated Mobile Money SMS messages, and owners spend hours trying to figure out why the till is short.
+              </p>
+              <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 text-xs text-emerald-900 font-medium">
+                <strong className="font-bold text-emerald-950 block mb-1">WingPOS Solution:</strong>
+                Live camera scanner reads customer MoMo SMS and till slips to match amounts with transaction reference numbers in seconds. Zero guesswork.
+              </div>
+            </div>
+
+            {/* Solution 2 */}
+            <div className="p-7 rounded-3xl bg-white border border-slate-200 shadow-xs hover:shadow-md transition-all space-y-4">
+              <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-sm">
+                02
+              </div>
+              <div className="space-y-1">
+                <div className="text-xs font-bold text-amber-600 uppercase tracking-wider">The Problem: Remote Blindness</div>
+                <h3 className="text-xl font-bold text-slate-900">Store owners kept in the dark when away from the shop</h3>
+              </div>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Calling staff late at night asking for numbers, waiting for paper notebooks to be tallied, or worrying about stock when traveling.
+              </p>
+              <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 text-xs text-emerald-900 font-medium">
+                <strong className="font-bold text-emerald-950 block mb-1">WingPOS Solution:</strong>
+                Automated WhatsApp Nightly Business Intelligence. Every evening, you receive a full financial digest on WhatsApp: total sales, cash vs MoMo, expenses, and staff shift balance.
+              </div>
+            </div>
+
+            {/* Solution 3 */}
+            <div className="p-7 rounded-3xl bg-white border border-slate-200 shadow-xs hover:shadow-md transition-all space-y-4">
+              <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold text-sm">
+                03
+              </div>
+              <div className="space-y-1">
+                <div className="text-xs font-bold text-sky-600 uppercase tracking-wider">The Problem: Internet Outages</div>
+                <h3 className="text-xl font-bold text-slate-900">Network downtime halts queue checkout and loses sales</h3>
+              </div>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Cloud-only POS systems crash when local cellular networks drop or power cuts occur, forcing staff to revert to paper receipts and losing customer trust.
+              </p>
+              <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 text-xs text-emerald-900 font-medium">
+                <strong className="font-bold text-emerald-950 block mb-1">WingPOS Solution:</strong>
+                100% Offline-First PWA. The cash register, catalog, and receipt printer operate locally without any internet connection, then seamlessly sync once back online.
+              </div>
+            </div>
+
+            {/* Solution 4 */}
+            <div className="p-7 rounded-3xl bg-white border border-slate-200 shadow-xs hover:shadow-md transition-all space-y-4">
+              <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-sm">
+                04
+              </div>
+              <div className="space-y-1">
+                <div className="text-xs font-bold text-purple-600 uppercase tracking-wider">The Problem: Customer Churn</div>
+                <h3 className="text-xl font-bold text-slate-900">Quiet retail weeks and losing repeat buyers to competitors</h3>
+              </div>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Customers walk in once and never return. Traditional stores have no way to reach existing shoppers with promotional discounts or festive holiday sales.
+              </p>
+              <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 text-xs text-emerald-900 font-medium">
+                <strong className="font-bold text-emerald-950 block mb-1">WingPOS Solution:</strong>
+                WhatsApp Digital Receipts automatically capture customer phone numbers with permission, powering automated 36 holiday promotions that bring shoppers back.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* INDUSTRY SECTION */}
+      <section id="industry" className="py-16 lg:py-24 bg-white border-t border-slate-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
+            <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
+              <Building2 className="w-3.5 h-3.5" />
+              <span>INDUSTRY VERTICALS</span>
+            </div>
+            <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
+              Engineered for every retail industry.
+            </h2>
+            <p className="text-base text-slate-600">
+              Whether you run a high-traffic grocery, electronics boutique, pharmacy, or wholesale depot, WingPOS adapts to your workflow.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              {
+                title: 'Supermarkets & Groceries',
+                icon: ShoppingBag,
+                desc: 'Fast barcode scanning, multi-lane cashier shifts, weigh-scale item entry, and fast bulk inventory imports.',
+                features: ['Weigh-scale & barcode support', 'Multi-cashier shift balancing', 'Fast bulk CSV stock import'],
+              },
+              {
+                title: 'Electronics & Mobile Gadgets',
+                icon: Smartphone,
+                desc: 'Serial & IMEI number logging, warranty tracking, customer phone capture, and instant Mobile Money split checkout.',
+                features: ['IMEI & serial number logs', 'Warranty records on receipts', 'MTN MoMo & Telecel splits'],
+              },
+              {
+                title: 'Pharmacies & Health Outlets',
+                icon: Package,
+                desc: 'Batch number logging, prescription notes, supplier invoices, and automated alerts before items reach expiry.',
+                features: ['Batch & expiry date alerts', 'Prescription customer logs', 'Low-stock reorder triggers'],
+              },
+              {
+                title: 'Fashion, Apparel & Boutiques',
+                icon: Store,
+                desc: 'Size and color variants, seasonal clearance promos, customer VIP ledgers, and digital WhatsApp receipts.',
+                features: ['Size, color & variant matrices', 'Holiday clearance promo tags', 'Digital WhatsApp receipts'],
+              },
+              {
+                title: 'Wholesale & FMCG Distribution',
+                icon: Boxes,
+                desc: 'Bulk tiered volume pricing, carton-to-unit sales, customer credit ledgers, and delivery invoice logs.',
+                features: ['Tiered wholesale bulk pricing', 'Carton to piece conversion', 'Customer credit accounting'],
+              },
+              {
+                title: 'Quick-Service Retail & Cafes',
+                icon: Zap,
+                desc: 'Fast touch screen menus, kitchen order slips, dual cash/MoMo registers, and daily perishable ingredient cost logs.',
+                features: ['Quick-touch visual register', 'Perishable ingredient expenses', 'Instant SMS/receipt printing'],
+              },
+            ].map((ind, idx) => {
+              const Icon = ind.icon;
+              return (
+                <div key={idx} className="p-6 rounded-3xl bg-slate-50 border border-slate-200 hover:border-emerald-300 hover:shadow-md transition-all flex flex-col justify-between">
+                  <div>
+                    <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-emerald-700 mb-4 shadow-2xs">
+                      <Icon className="w-6 h-6" />
+                    </div>
+                    <h3 className="font-bold text-lg text-slate-900 mb-2">{ind.title}</h3>
+                    <p className="text-xs text-slate-600 leading-relaxed mb-4">{ind.desc}</p>
+                    <div className="space-y-1.5 text-xs text-slate-700">
+                      {ind.features.map((feat, fIdx) => (
+                        <div key={fIdx} className="flex items-center gap-2">
+                          <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          <span>{feat}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="pt-6 mt-6 border-t border-slate-200">
+                    <button
+                      onClick={() => onNavigateToOnboarding('BUSINESS_PRO')}
+                      className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>Explore {ind.title} Solution</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ABOUT SECTION */}
+      <section id="about" className="py-16 lg:py-24 bg-gradient-to-b from-[#f4faf7] via-white to-slate-50 border-t border-slate-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            {/* Left Copy */}
+            <div className="lg:col-span-6 space-y-6">
+              <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
+                <Store className="w-3.5 h-3.5" />
+                <span>ABOUT WINGPOS</span>
+              </div>
+
+              <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
+                Built for retailers who refuse to fly blind.
+              </h2>
+
+              <p className="text-base text-slate-600 leading-relaxed">
+                WingPOS was born from a fundamental observation across retail markets in Ghana and West Africa: retail merchants work 14 hours a day, yet lose significant profits each month to unverified Mobile Money payments, drawer shortages, untracked expenses, and manual paper bookkeeping fatigue.
+              </p>
+
+              <p className="text-sm text-slate-600 leading-relaxed">
+                We engineered WingPOS to solve these realities from the ground up: an operating system that works 100% offline, bridges cash with Mobile Money through AI camera reconciliation, and delivers nightly business health reports directly to the tool merchants already use every hour — WhatsApp.
+              </p>
+
+              <div className="grid grid-cols-2 gap-4 pt-2">
+                <div className="p-4 bg-white rounded-2xl border border-slate-200">
+                  <div className="text-2xl font-black text-slate-900 font-mono">2,400+</div>
+                  <div className="text-xs text-slate-500 font-medium">Active storefronts powered</div>
+                </div>
+                <div className="p-4 bg-white rounded-2xl border border-slate-200">
+                  <div className="text-2xl font-black text-emerald-600 font-mono">99.98%</div>
+                  <div className="text-xs text-slate-500 font-medium">Offline register uptime</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 pt-2">
+                <button
+                  onClick={() => onNavigateToOnboarding('FREE_TRIAL')}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm px-6 py-3.5 rounded-full transition-all shadow-xs cursor-pointer flex items-center gap-2"
+                >
+                  <span>Start Free Trial</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={onNavigateToApp}
+                  className="bg-slate-100 hover:bg-slate-200 text-slate-900 font-bold text-xs sm:text-sm px-5 py-3.5 rounded-full transition-all cursor-pointer"
+                >
+                  Launch Direct Demo
+                </button>
+              </div>
+            </div>
+
+            {/* Right: Pillars */}
+            <div className="lg:col-span-6 space-y-4">
+              <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-xs flex items-start gap-4">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-base text-slate-900 mb-1">Bank-Grade MoMo Reconciliation</h4>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Point your camera at customer SMS confirmation slips to extract reference numbers, prevent fake payment alerts, and eliminate till discrepancies.
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-xs flex items-start gap-4">
+                <div className="w-10 h-10 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center shrink-0">
+                  <MessageSquare className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-base text-slate-900 mb-1">WhatsApp-Native Automation</h4>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    No complicated corporate software. Get evening financial summaries on WhatsApp, issue digital customer receipts, and run seasonal promo campaigns.
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-xs flex items-start gap-4">
+                <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
+                  <Zap className="w-5 h-5 fill-purple-600 text-purple-600" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-base text-slate-900 mb-1">Zero Hardware Lock-In</h4>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Run WingPOS on any device you already own — Android phones, iPads, laptops, or standard thermal POS terminals.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* 2. PRICING & PLANS SECTION */}
+      <section id="pricing" className="py-16 lg:py-24 bg-white border-t border-slate-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-12 space-y-4">
+            <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
+              <span>Transparent Pricing &amp; Plans</span>
+            </div>
+            <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
+              Predictable plans built for businesses of any scale.
+            </h2>
+            <p className="text-base sm:text-lg text-slate-600">
+              Start with our 14-day free trial. Upgrade anytime as your retail branches grow. No hidden transaction cuts on cash.
+            </p>
+
+            {/* Billing Cycle Toggle */}
+            <div className="pt-4 flex items-center justify-center gap-3">
+              <span className={`text-xs sm:text-sm font-semibold ${billingCycle === 'MONTHLY' ? 'text-slate-900' : 'text-slate-500'}`}>
+                Monthly Billing
+              </span>
+              <button
+                onClick={() => setBillingCycle(billingCycle === 'MONTHLY' ? 'ANNUAL' : 'MONTHLY')}
+                className="w-14 h-8 bg-emerald-600 rounded-full p-1 transition-colors relative cursor-pointer"
+                aria-label="Toggle annual billing"
+              >
+                <div
+                  className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform ${
+                    billingCycle === 'ANNUAL' ? 'translate-x-6' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+              <div className="flex items-center gap-1.5">
+                <span className={`text-xs sm:text-sm font-semibold ${billingCycle === 'ANNUAL' ? 'text-slate-900' : 'text-slate-500'}`}>
+                  Annual Billing
+                </span>
+                <span className="bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-2 py-0.5 rounded-full">
+                  SAVE 20%
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Pricing Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {plans.map((p) => (
+              <div
+                key={p.id}
+                className={`rounded-2xl p-6 transition-all flex flex-col justify-between ${
+                  p.popular
+                    ? 'border-2 border-emerald-600 bg-white shadow-xl relative'
+                    : 'border border-slate-200 bg-slate-50/50 hover:bg-white hover:shadow-md'
+                }`}
+              >
+                {p.popular && (
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-emerald-600 text-white text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-xs">
+                    Most Popular
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900">{p.name}</h3>
+                    <p className="text-xs text-slate-500 mt-1 min-h-[32px]">{p.description}</p>
+                  </div>
+
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-black text-slate-900">{p.price}</span>
+                    <span className="text-xs text-slate-500 font-medium">{p.period}</span>
+                  </div>
+
+                  <div className="border-t border-slate-100 pt-4 space-y-2.5">
+                    {p.features.map((feat, idx) => (
+                      <div key={idx} className="flex items-start gap-2 text-xs text-slate-700">
+                        <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                        <span>{feat}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-6">
+                  <button
+                    onClick={() => onNavigateToOnboarding(p.id)}
+                    className={`w-full py-3 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
+                      p.popular
+                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'
+                        : 'bg-white hover:bg-slate-100 text-slate-800 border border-slate-200'
+                    }`}
+                  >
+                    {p.cta}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 3. ROI CALCULATOR SECTION */}
+      <section id="roi-calculator" className="py-16 lg:py-24 bg-gradient-to-b from-[#f0f9f5]/50 via-white to-slate-50 border-t border-slate-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
+            <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
+              <Calculator className="w-3.5 h-3.5" />
+              <span>Interactive ROI &amp; Revenue Protection Calculator</span>
+            </div>
+            <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
+              See how much cash leakage and manual time WingPOS saves your shop.
+            </h2>
+            <p className="text-base text-slate-600">
+              Unreconciled registers lose an average of 3%–5% of turnover each month to untracked discounts, unverified MoMo payments, and drawer variances.
+            </p>
+          </div>
+
+          <div className="bg-white rounded-3xl border border-slate-200 p-8 sm:p-12 shadow-lg grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+            {/* Left: Interactive Controls */}
+            <div className="lg:col-span-6 space-y-6">
+              {/* Daily Sales Slider */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="text-sm font-bold text-slate-800">
+                    Average Daily Turnover:
+                  </label>
+                  <span className="text-lg font-black text-emerald-700">
+                    GH₵ {roiDailySales.toLocaleString()} / day
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="500"
+                  max="25000"
+                  step="250"
+                  value={roiDailySales}
+                  onChange={(e) => setRoiDailySales(parseInt(e.target.value, 10))}
+                  className="w-full accent-emerald-600 h-2 bg-slate-200 rounded-lg cursor-pointer"
+                />
+                <div className="flex justify-between text-[11px] text-slate-400">
+                  <span>GH₵ 500</span>
+                  <span>GH₵ 12,500</span>
+                  <span>GH₵ 25,000+</span>
+                </div>
+              </div>
+
+              {/* Staff Count Slider */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="text-sm font-bold text-slate-800">
+                    Number of Cashiers &amp; Shop Staff:
+                  </label>
+                  <span className="text-lg font-black text-emerald-700">
+                    {roiStaffCount} {roiStaffCount === 1 ? 'Person' : 'People'}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="1"
+                  max="10"
+                  step="1"
+                  value={roiStaffCount}
+                  onChange={(e) => setRoiStaffCount(parseInt(e.target.value, 10))}
+                  className="w-full accent-emerald-600 h-2 bg-slate-200 rounded-lg cursor-pointer"
+                />
+                <div className="flex justify-between text-[11px] text-slate-400">
+                  <span>1 cashier</span>
+                  <span>5 team members</span>
+                  <span>10+ attendants</span>
+                </div>
+              </div>
+
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-xs text-slate-600 space-y-1.5">
+                <div className="font-bold text-slate-800">Calculated with Ghana retail benchmarks:</div>
+                <div className="flex items-center gap-1.5">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>3.2% estimated leakage eliminated via Camera MoMo reconciliation</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>1.5 hours of manual daily bookkeeping recovered per staff member</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>18% holiday sales uplift across Ghana's 36 seasonal calendar events</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Calculated Metrics Display */}
+            <div className="lg:col-span-6 bg-gradient-to-br from-slate-900 to-[#032e25] text-white rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
+                  Estimated Monthly Value Delivered
+                </span>
+                <div className="text-4xl sm:text-5xl font-black text-white mt-1">
+                  GH₵ {Math.round(roiDailySales * 30 * 0.032 + roiDailySales * 30 * 0.15).toLocaleString()}
+                  <span className="text-sm font-semibold text-emerald-300"> / month</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-700/80">
+                <div className="bg-white/5 rounded-xl p-3.5 border border-white/10">
+                  <div className="text-[11px] text-slate-300">Cash Leakage Stopped:</div>
+                  <div className="text-xl font-bold text-emerald-300 mt-0.5">
+                    GH₵ {Math.round(roiDailySales * 30 * 0.032).toLocaleString()}
+                  </div>
+                  <div className="text-[10px] text-slate-400 mt-0.5">per month</div>
+                </div>
+
+                <div className="bg-white/5 rounded-xl p-3.5 border border-white/10">
+                  <div className="text-[11px] text-slate-300">Reconciliation Hours Saved:</div>
+                  <div className="text-xl font-bold text-emerald-300 mt-0.5">
+                    {Math.round(roiStaffCount * 1.5 * 26)} hrs
+                  </div>
+                  <div className="text-[10px] text-slate-400 mt-0.5">staff time monthly</div>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  onClick={() => onNavigateToOnboarding('FREE_TRIAL')}
+                  className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3.5 px-6 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer text-sm"
+                >
+                  <span>Start Free Trial — Protect Your Revenue</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. FAQ SECTION */}
+      <section id="faq" className="py-16 lg:py-24 bg-white border-t border-slate-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12 space-y-3">
+            <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
+              <HelpCircle className="w-3.5 h-3.5" />
+              <span>Frequently Asked Questions</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+              Everything you need to know about WingPOS
+            </h2>
+            <p className="text-sm sm:text-base text-slate-600">
+              Clear answers on WhatsApp delivery, permissions, hardware printers, and payment channels.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {[
+              {
+                q: 'How does the WhatsApp Daily Close Report work?',
+                a: 'Every evening when you close your till or at your scheduled closing time, WingPOS automatically summarizes all sales, separates Cash from Mobile Money (MTN, Telecel, AT) and Card payments, deducts shop expenses, and delivers the report straight to the business owner\'s personal WhatsApp. You don\'t even have to open the app.',
+              },
+              {
+                q: 'Can staff members access my dashboard, expenses, or change payment settings?',
+                a: 'No. WingPOS comes with role-based access control (RBAC). Staff and Cashiers only have access to the sales register, which is locked behind their unique 4-digit PIN. Only the business owner can view the executive dashboard, manage expense records, perform audit reconciliation, or configure payment gateways.',
+              },
+              {
+                q: 'Can I connect a thermal receipt printer via Bluetooth or Wi-Fi?',
+                a: 'Yes! WingPOS has built-in Bluetooth and Wi-Fi receipt printer connectivity. You can connect to standard 58mm or 80mm ESC/POS thermal printers directly from your browser to print customer receipts and complete sales accounting ledgers.',
+              },
+              {
+                q: 'How does Visa & Mastercard card payment via Paystack work?',
+                a: 'When you record a sale, select the Visa / Mastercard option. You can enter or scan card details processed securely through Paystack Ghana. The reference code is logged automatically into your ledger, and funds settle directly into your linked bank or MoMo account.',
+              },
+              {
+                q: 'What is the 36 Holidays Promo feature?',
+                a: 'WingPOS comes preloaded with Ghana\'s full 36 retail and cultural holidays (e.g. Independence Day, Eid, Mother\'s Day, Farmer\'s Day, Cyber Week, Christmas). Before each event, WingPOS drafts a high-conversion promotional message with your chosen discount rate. You review and approve it with one tap to send to your customer database.',
+              },
+              {
+                q: 'Do I need special POS hardware or a desktop computer?',
+                a: 'No special hardware is required. WingPOS runs seamlessly on any smartphone, iPad/tablet, or computer laptop. You can even use your phone camera directly on customer SMS screens to verify MoMo payments.',
+              },
+            ].map((item, idx) => (
+              <div
+                key={idx}
+                className="border border-slate-200 rounded-2xl overflow-hidden transition-all bg-white"
+              >
+                <button
+                  onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
+                  className="w-full text-left p-5 flex items-center justify-between font-bold text-slate-900 text-sm sm:text-base hover:text-emerald-700 transition-colors cursor-pointer"
+                >
+                  <span>{item.q}</span>
+                  {activeFaq === idx ? (
+                    <ChevronUp className="w-5 h-5 text-emerald-600 shrink-0" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-slate-400 shrink-0" />
+                  )}
+                </button>
+                {activeFaq === idx && (
+                  <div className="px-5 pb-5 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
+                    {item.a}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CONTACT SECTION */}
+      <section id="contact" className="py-16 lg:py-24 bg-[#f8faf9]/50 border-t border-slate-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
+            <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
+              <Phone className="w-3.5 h-3.5" />
+              <span>CONTACT WINGPOS SUPPORT</span>
+            </div>
+            <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
+              We're here to help your store thrive.
+            </h2>
+            <p className="text-base text-slate-600">
+              Questions about hardware compatibility, WhatsApp reporting, multi-store setups, or custom VPS deployment? Chat with our retail engineers.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            {/* Left: Contact Channels */}
+            <div className="lg:col-span-5 space-y-5">
+              <div className="p-6 bg-white rounded-3xl border border-slate-200 space-y-5 shadow-xs">
+                <h3 className="font-bold text-lg text-slate-900">Direct Support Channels</h3>
+
+                <a
+                  href={`https://wa.me/233244567890?text=${encodeURIComponent('Hello WingPOS team, I would like to inquire about setting up WingPOS for my retail shop.')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3.5 p-3.5 bg-[#00a884] hover:bg-[#008f70] text-white rounded-2xl font-bold text-xs sm:text-sm transition-all shadow-sm cursor-pointer"
+                >
+                  <MessageSquare className="w-5 h-5 shrink-0" />
+                  <div>
+                    <div>Chat on WhatsApp (+233 24 456 7890)</div>
+                    <div className="text-[10px] text-emerald-100 font-normal">Typical reply time: Under 5 minutes</div>
+                  </div>
+                </a>
+
+                <div className="space-y-3 text-xs text-slate-700">
+                  <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <Phone className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <div>
+                      <div className="font-bold text-slate-900">Phone Hotline</div>
+                      <div className="text-slate-500">{business.phone || '+233 24 456 7890'}</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <Mail className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <div>
+                      <div className="font-bold text-slate-900">Official Email Support</div>
+                      <div className="text-slate-500 font-mono">support@wingpos.app</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <MapPin className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <div>
+                      <div className="font-bold text-slate-900">Retail Support Hub</div>
+                      <div className="text-slate-500">Accra, Ghana · Mon – Sat (7:00 AM – 9:00 PM GMT)</div>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={onOpenVpsGuide}
+                  className="w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Server className="w-3.5 h-3.5" />
+                  <span>View Self-Hosted VPS Deployment Guide</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Right: In-Page Contact Form */}
+            <div className="lg:col-span-7 bg-white p-7 sm:p-9 rounded-3xl border border-slate-200 shadow-sm">
+              <h3 className="font-black text-xl text-slate-900 mb-2">Send an Instant Message</h3>
+              <p className="text-xs text-slate-500 mb-6">
+                Tell us about your business, and a retail specialist will reach out to you via WhatsApp or phone.
+              </p>
+
+              {contactSubmitted ? (
+                <div className="p-8 bg-emerald-50 rounded-2xl border border-emerald-200 text-center space-y-3">
+                  <div className="w-12 h-12 rounded-full bg-emerald-600 text-white flex items-center justify-center mx-auto">
+                    <Check className="w-6 h-6 stroke-[3]" />
+                  </div>
+                  <h4 className="text-lg font-bold text-emerald-950">Thank you, {contactForm.name}!</h4>
+                  <p className="text-xs text-emerald-800 max-w-md mx-auto">
+                    Your inquiry has been received. Our retail onboarding specialist will contact you on WhatsApp ({contactForm.phone}) shortly.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setContactSubmitted(false);
+                      setContactForm({ name: '', phone: '', storeName: '', city: 'Accra', message: '' });
+                    }}
+                    className="text-xs font-bold text-emerald-700 underline pt-2 cursor-pointer"
+                  >
+                    Send another message
+                  </button>
+                </div>
+              ) : (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (!contactForm.name || !contactForm.phone) return;
+                    setContactSubmitted(true);
+                  }}
+                  className="space-y-4"
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Your Full Name *</label>
+                      <input
+                        type="text"
+                        required
+                        value={contactForm.name}
+                        onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+                        placeholder="e.g. Kwesi Mensah"
+                        className="w-full text-xs p-3 rounded-xl border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">WhatsApp / Phone Number *</label>
+                      <input
+                        type="tel"
+                        required
+                        value={contactForm.phone}
+                        onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
+                        placeholder="e.g. +233 24 123 4567"
+                        className="w-full text-xs p-3 rounded-xl border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Shop / Store Name</label>
+                      <input
+                        type="text"
+                        value={contactForm.storeName}
+                        onChange={(e) => setContactForm({ ...contactForm, storeName: e.target.value })}
+                        placeholder="e.g. Mensah Supermarket"
+                        className="w-full text-xs p-3 rounded-xl border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">City / Region</label>
+                      <input
+                        type="text"
+                        value={contactForm.city}
+                        onChange={(e) => setContactForm({ ...contactForm, city: e.target.value })}
+                        placeholder="e.g. Accra, Kumasi, Takoradi"
+                        className="w-full text-xs p-3 rounded-xl border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Message or Inquiries</label>
+                    <textarea
+                      rows={3}
+                      value={contactForm.message}
+                      onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
+                      placeholder="Tell us what you sell, how many cashiers you have, or any specific POS hardware you want to use."
+                      className="w-full text-xs p-3 rounded-xl border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm py-3.5 rounded-xl transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Send className="w-4 h-4" />
+                    <span>Send Inquiry to WingPOS Team</span>
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* START FREE TRIAL & DIRECT DEMO BANNER */}
       <section className="py-12 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-gradient-to-r from-[#033b31] via-[#054337] to-[#04604b] rounded-[32px] p-8 sm:p-12 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="bg-gradient-to-r from-[#033b31] via-[#054337] to-[#04604b] rounded-[32px] p-8 sm:p-12 text-white shadow-xl flex flex-col lg:flex-row items-center justify-between gap-8">
             
-            {/* Left: Shield icon and copy */}
+            {/* Left: Copy */}
             <div className="flex items-center gap-5">
               <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-xs flex items-center justify-center text-emerald-300 shrink-0 border border-white/20">
                 <ShieldCheck className="w-8 h-8 stroke-[2]" />
               </div>
               <div className="space-y-1">
                 <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-                  Protect your revenue.
+                  Start Your 14-Day Free Trial Today
                 </h3>
                 <p className="text-sm sm:text-base text-emerald-100/90 font-normal">
-                  Reduce cash leakage. Reconcile with confidence using live phone camera scanning.
+                  Protect your revenue, stop cash leakage, and receive automated WhatsApp business health reports every evening.
                 </p>
               </div>
             </div>
 
             {/* Right: CTA Buttons */}
-            <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
+            <div className="flex flex-wrap items-center gap-3 shrink-0">
               <button
-                onClick={onNavigateToApp}
-                className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm sm:text-base px-6 py-3.5 rounded-full transition-all shadow-md hover:shadow-lg flex items-center gap-2 cursor-pointer"
+                onClick={() => onNavigateToOnboarding('FREE_TRIAL')}
+                className="bg-white hover:bg-slate-100 text-slate-950 font-black text-sm px-6 py-3.5 rounded-full transition-all shadow-md hover:shadow-lg flex items-center gap-2 cursor-pointer"
               >
-                <Zap className="w-4 h-4 fill-slate-950" />
-                <span>Launch POS Demo Direct</span>
+                <span>Start Free Trial (14 Days)</span>
+                <ArrowRight className="w-4 h-4 text-emerald-700" />
               </button>
 
               <button
-                onClick={() => onNavigateToOnboarding('BUSINESS_PRO')}
-                className="bg-white hover:bg-slate-100 text-slate-900 font-bold text-sm sm:text-base px-6 py-3.5 rounded-full transition-all shadow-md hover:shadow-lg flex items-center gap-2 cursor-pointer"
+                onClick={onNavigateToApp}
+                className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm px-5 py-3.5 rounded-full transition-all shadow-md hover:shadow-lg flex items-center gap-2 cursor-pointer"
               >
-                <span>New Business? Register</span>
-                <ArrowRight className="w-4 h-4 text-emerald-700" />
+                <Zap className="w-4 h-4 fill-slate-950" />
+                <span>Direct Demo</span>
               </button>
+
+              <a
+                href="#install-app"
+                className="bg-black/30 hover:bg-black/40 border border-white/20 text-white font-bold text-sm px-4 py-3.5 rounded-full transition-all flex items-center gap-1.5 cursor-pointer"
+              >
+                <Smartphone className="w-4 h-4 text-emerald-300" />
+                <span>Install App</span>
+              </a>
             </div>
 
           </div>
@@ -1340,13 +2875,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </svg>
             </div>
             <span className="font-extrabold text-base tracking-tight text-slate-900">
-              KORA
+              WingPOS
             </span>
           </div>
 
           {/* Center: Tagline */}
           <div className="text-sm font-medium text-slate-600">
-            Modern retail. Simple.
+            Retail Business Intelligence with WhatsApp Automation
           </div>
 
           {/* Right: Actions & Instance */}
@@ -1355,7 +2890,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               onClick={onNavigateToApp} 
               className="font-mono text-xs text-emerald-700 hover:underline font-semibold cursor-pointer"
             >
-              pos.kora.app
+              wingpos.app
             </button>
             <span>·</span>
             <button 
@@ -1474,7 +3009,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
-              <h3 className="text-xl font-bold text-slate-900">About KORA</h3>
+              <h3 className="text-xl font-bold text-slate-900">About WingPOS</h3>
               <button 
                 onClick={() => setShowAboutModal(false)}
                 className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 cursor-pointer"
@@ -1483,7 +3018,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </button>
             </div>
             <p className="text-sm text-slate-600 leading-relaxed mb-4">
-              KORA is the modern retail operating system built specifically for retail storefronts, supermarkets, boutiques, and pharmacies across West Africa.
+              WingPOS is the modern retail business intelligence platform built specifically for retail storefronts, supermarkets, boutiques, and pharmacies across West Africa.
             </p>
             <p className="text-sm text-slate-600 leading-relaxed mb-6">
               Our mission is to eliminate cash shrinkage and guesswork in retail through seamless POS checkout, integrated Mobile Money reconciliation, phone camera scanning for MoMo SMS alerts, and automated daily WhatsApp financial close reports delivered directly to the business owner every evening.
@@ -1495,7 +3030,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               }}
               className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-full text-sm transition-colors cursor-pointer"
             >
-              Start Free Trial with KORA
+              Start Free Trial with WingPOS
             </button>
           </div>
         </div>
@@ -1506,7 +3041,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-100">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
-              <h3 className="text-xl font-bold text-slate-900">Contact KORA Support</h3>
+              <h3 className="text-xl font-bold text-slate-900">Contact WingPOS Support</h3>
               <button 
                 onClick={() => setShowContactModal(false)}
                 className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 cursor-pointer"
@@ -1533,7 +3068,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <Server className="w-5 h-5 text-emerald-600" />
                 <div>
                   <div className="font-bold text-slate-900">Self-Hosted VPS Inquiries</div>
-                  <div className="text-xs text-slate-500">support@kora.app</div>
+                  <div className="text-xs text-slate-500">support@wingpos.app</div>
                 </div>
               </div>
             </div>

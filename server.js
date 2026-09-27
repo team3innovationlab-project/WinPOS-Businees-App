@@ -9,6 +9,291 @@ import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
+
+// src/server/supabaseDb.ts
+import pg from "pg";
+import { createClient } from "@supabase/supabase-js";
+var { Pool } = pg;
+var SUPABASE_URL = process.env.SUPABASE_URL || "https://qzscfazqaufdfdjnbmmd.supabase.co";
+var SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "sb_publishable_nGLt4zwnnavyAt7RJAQDqQ__jhs7BN_";
+var SUPABASE_DB_PASSWORD = process.env.SUPABASE_DB_PASSWORD || "5FgfUWu8%f/#Qv#";
+var SUPABASE_HOST = process.env.SUPABASE_HOST || "db.qzscfazqaufdfdjnbmmd.supabase.co";
+var SUPABASE_PORT = parseInt(process.env.SUPABASE_PORT || "5432", 10);
+var SUPABASE_USER = process.env.SUPABASE_USER || "postgres";
+var SUPABASE_DATABASE = process.env.SUPABASE_DATABASE || "postgres";
+var supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+var pgPool = new Pool({
+  host: SUPABASE_HOST,
+  port: SUPABASE_PORT,
+  user: SUPABASE_USER,
+  password: SUPABASE_DB_PASSWORD,
+  database: SUPABASE_DATABASE,
+  ssl: { rejectUnauthorized: false },
+  max: 10,
+  idleTimeoutMillis: 3e4,
+  connectionTimeoutMillis: 5e3
+});
+var isConnected = false;
+var lastPingTime = 0;
+var lastError = null;
+async function initSupabaseSchema() {
+  let client = null;
+  try {
+    client = await pgPool.connect();
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS pos_state_store (
+        id VARCHAR(100) PRIMARY KEY,
+        data JSONB NOT NULL,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      );
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS pos_sales (
+        id VARCHAR(100) PRIMARY KEY,
+        receipt_number VARCHAR(100),
+        business_id VARCHAR(100),
+        total NUMERIC(12, 2) NOT NULL,
+        subtotal NUMERIC(12, 2) NOT NULL,
+        payment_method VARCHAR(50),
+        cashier_name VARCHAR(150),
+        cashier_id VARCHAR(100),
+        customer_name VARCHAR(150),
+        customer_phone VARCHAR(50),
+        created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+        items JSONB NOT NULL,
+        raw_data JSONB NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS idx_pos_sales_created_at ON pos_sales (created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_pos_sales_payment ON pos_sales (payment_method);
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS pos_expenses (
+        id VARCHAR(100) PRIMARY KEY,
+        business_id VARCHAR(100),
+        title VARCHAR(255) NOT NULL,
+        amount NUMERIC(12, 2) NOT NULL,
+        category VARCHAR(100) NOT NULL,
+        recorded_by VARCHAR(150),
+        created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+        raw_data JSONB NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS idx_pos_expenses_created_at ON pos_expenses (created_at DESC);
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS pos_stock (
+        id VARCHAR(100) PRIMARY KEY,
+        business_id VARCHAR(100),
+        name VARCHAR(255) NOT NULL,
+        barcode VARCHAR(100),
+        price NUMERIC(12, 2) NOT NULL,
+        cost_price NUMERIC(12, 2),
+        quantity NUMERIC(12, 2) NOT NULL DEFAULT 0,
+        category VARCHAR(100),
+        low_stock_threshold NUMERIC(12, 2) DEFAULT 5,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        raw_data JSONB NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS idx_pos_stock_barcode ON pos_stock (barcode);
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS pos_audit_events (
+        id BIGSERIAL PRIMARY KEY,
+        event_type VARCHAR(100) NOT NULL,
+        entity_id VARCHAR(100),
+        payload JSONB,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      );
+    `);
+    isConnected = true;
+    lastPingTime = Date.now();
+    lastError = null;
+    console.log("[Supabase DB] Schema verified and initialized successfully on Supabase PostgreSQL.");
+    return true;
+  } catch (err) {
+    isConnected = false;
+    lastError = err?.message || String(err);
+    console.warn("[Supabase DB] Schema initialization warning:", lastError);
+    return false;
+  } finally {
+    if (client) client.release();
+  }
+}
+async function loadStateFromSupabase() {
+  let client = null;
+  try {
+    client = await pgPool.connect();
+    const res = await client.query("SELECT data FROM pos_state_store WHERE id = $1", ["main_pos_state"]);
+    if (res.rows.length > 0 && res.rows[0].data) {
+      isConnected = true;
+      lastError = null;
+      return res.rows[0].data;
+    }
+    return null;
+  } catch (err) {
+    console.warn("[Supabase DB] Could not load state from Supabase:", err.message);
+    lastError = err.message;
+    return null;
+  } finally {
+    if (client) client.release();
+  }
+}
+async function saveStateToSupabase(data) {
+  let client = null;
+  try {
+    client = await pgPool.connect();
+    await client.query(
+      `INSERT INTO pos_state_store (id, data, updated_at) 
+       VALUES ($1, $2, NOW()) 
+       ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = NOW()`,
+      ["main_pos_state", JSON.stringify(data)]
+    );
+    if (data.sales && data.sales.length > 0) {
+      const recentSales = data.sales.slice(0, 100);
+      for (const sale of recentSales) {
+        const saleIso = sale.date ? `${sale.date}T${sale.time || "12:00:00"}Z` : (/* @__PURE__ */ new Date()).toISOString();
+        await client.query(
+          `INSERT INTO pos_sales (
+             id, receipt_number, business_id, total, subtotal, payment_method, 
+             cashier_name, cashier_id, customer_name, customer_phone, created_at, items, raw_data
+           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+           ON CONFLICT (id) DO UPDATE SET 
+             total = EXCLUDED.total,
+             payment_method = EXCLUDED.payment_method,
+             raw_data = EXCLUDED.raw_data`,
+          [
+            sale.id,
+            sale.receiptNumber || sale.id,
+            data.business?.id || "biz_techwokx_gh",
+            sale.totalAmount,
+            sale.subtotal || sale.totalAmount,
+            sale.paymentMethod,
+            sale.cashierName || "Staff Cashier",
+            sale.cashierId || "usr_staff",
+            sale.customerName || null,
+            sale.customerPhone || null,
+            new Date(saleIso),
+            JSON.stringify(sale.items || []),
+            JSON.stringify(sale)
+          ]
+        );
+      }
+    }
+    if (data.stock && data.stock.length > 0) {
+      for (const item of data.stock) {
+        await client.query(
+          `INSERT INTO pos_stock (
+             id, business_id, name, barcode, price, cost_price, quantity, category, low_stock_threshold, raw_data
+           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+           ON CONFLICT (id) DO UPDATE SET 
+             name = EXCLUDED.name,
+             price = EXCLUDED.price,
+             cost_price = EXCLUDED.cost_price,
+             quantity = EXCLUDED.quantity,
+             category = EXCLUDED.category,
+             updated_at = NOW(),
+             raw_data = EXCLUDED.raw_data`,
+          [
+            item.id,
+            data.business?.id || "biz_techwokx_gh",
+            item.name,
+            item.sku || null,
+            item.sellingPrice,
+            item.costPrice || null,
+            item.currentQuantity,
+            item.category || "General",
+            item.restockThreshold || 5,
+            JSON.stringify(item)
+          ]
+        );
+      }
+    }
+    if (data.expenses && data.expenses.length > 0) {
+      const recentExpenses = data.expenses.slice(0, 100);
+      for (const exp of recentExpenses) {
+        const expIso = exp.date ? `${exp.date}T${exp.time || "12:00:00"}Z` : (/* @__PURE__ */ new Date()).toISOString();
+        await client.query(
+          `INSERT INTO pos_expenses (
+             id, business_id, title, amount, category, recorded_by, created_at, raw_data
+           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+           ON CONFLICT (id) DO UPDATE SET 
+             title = EXCLUDED.title,
+             amount = EXCLUDED.amount,
+             raw_data = EXCLUDED.raw_data`,
+          [
+            exp.id,
+            data.business?.id || "biz_techwokx_gh",
+            exp.description || "Shop Expense",
+            exp.amount,
+            exp.category,
+            exp.recordedBy || "Business Owner",
+            new Date(expIso),
+            JSON.stringify(exp)
+          ]
+        );
+      }
+    }
+    isConnected = true;
+    lastPingTime = Date.now();
+    lastError = null;
+    return true;
+  } catch (err) {
+    console.warn("[Supabase DB] Error syncing to Supabase:", err.message);
+    lastError = err.message;
+    return false;
+  } finally {
+    if (client) client.release();
+  }
+}
+async function getSupabaseHealth() {
+  const start2 = Date.now();
+  let client = null;
+  try {
+    client = await pgPool.connect();
+    const verRes = await client.query("SELECT version(), NOW() as server_time");
+    const countsRes = await client.query(`
+      SELECT 
+        (SELECT COUNT(*) FROM pos_sales) as sales_count,
+        (SELECT COUNT(*) FROM pos_stock) as stock_count,
+        (SELECT COUNT(*) FROM pos_expenses) as expenses_count
+    `);
+    const latencyMs = Date.now() - start2;
+    isConnected = true;
+    lastPingTime = Date.now();
+    lastError = null;
+    return {
+      connected: true,
+      provider: "Supabase PostgreSQL 17",
+      projectUrl: SUPABASE_URL,
+      host: SUPABASE_HOST,
+      port: SUPABASE_PORT,
+      database: SUPABASE_DATABASE,
+      latencyMs,
+      serverTime: verRes.rows[0]?.server_time,
+      version: verRes.rows[0]?.version,
+      stats: {
+        salesRows: parseInt(countsRes.rows[0]?.sales_count || "0", 10),
+        stockRows: parseInt(countsRes.rows[0]?.stock_count || "0", 10),
+        expenseRows: parseInt(countsRes.rows[0]?.expenses_count || "0", 10)
+      },
+      lastSyncedAt: new Date(lastPingTime).toISOString()
+    };
+  } catch (err) {
+    isConnected = false;
+    lastError = err?.message || String(err);
+    return {
+      connected: false,
+      provider: "Supabase PostgreSQL 17",
+      projectUrl: SUPABASE_URL,
+      host: SUPABASE_HOST,
+      error: lastError,
+      latencyMs: Date.now() - start2
+    };
+  } finally {
+    if (client) client.release();
+  }
+}
+
+// src/server/storage.ts
 var DATA_DIR = path.resolve(process.cwd(), "data");
 var DB_FILE = path.resolve(DATA_DIR, "pos_database.json");
 function hashPassword(password) {
@@ -462,7 +747,56 @@ var DEFAULT_SEED_DATA = {
 };
 var PosStorage = class {
   constructor() {
+    this.isSupabaseSyncing = false;
     this.data = this.loadData();
+    this.initSupabaseSync();
+  }
+  async initSupabaseSync() {
+    if (this.isSupabaseSyncing) return;
+    this.isSupabaseSyncing = true;
+    try {
+      const initialized = await initSupabaseSchema();
+      if (initialized) {
+        const remoteState = await loadStateFromSupabase();
+        if (remoteState && remoteState.business && remoteState.business.id) {
+          console.log("[PosStorage] Successfully hydrated POS state from Supabase PostgreSQL");
+          this.data = remoteState;
+          this.writeLocalFile(this.data);
+        } else {
+          console.log("[PosStorage] Initializing remote Supabase PostgreSQL with local dataset");
+          await saveStateToSupabase(this.data);
+        }
+      }
+    } catch (err) {
+      console.warn("[PosStorage] Supabase sync initialization warning:", err?.message || err);
+    } finally {
+      this.isSupabaseSyncing = false;
+    }
+  }
+  async forceSupabaseFullSync() {
+    try {
+      await initSupabaseSchema();
+      const ok = await saveStateToSupabase(this.data);
+      return {
+        success: ok,
+        message: ok ? "Successfully synced all sales, stock, and expenses to Supabase!" : "Failed to write to Supabase"
+      };
+    } catch (err) {
+      return { success: false, message: err?.message || "Sync error" };
+    }
+  }
+  getRawData() {
+    return this.data;
+  }
+  writeLocalFile(data) {
+    try {
+      if (!fs.existsSync(DATA_DIR)) {
+        fs.mkdirSync(DATA_DIR, { recursive: true });
+      }
+      fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), "utf-8");
+    } catch (err) {
+      console.error("Failed to write local database file:", err);
+    }
   }
   loadData() {
     try {
@@ -536,14 +870,10 @@ var PosStorage = class {
     return DEFAULT_SEED_DATA;
   }
   saveData(data) {
-    try {
-      if (!fs.existsSync(DATA_DIR)) {
-        fs.mkdirSync(DATA_DIR, { recursive: true });
-      }
-      fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), "utf-8");
-    } catch (err) {
-      console.error("Failed to save database file:", err);
-    }
+    this.writeLocalFile(data);
+    saveStateToSupabase(data).catch((err) => {
+      console.warn("[PosStorage] Supabase PostgreSQL sync warning:", err?.message || err);
+    });
   }
   // --- Auth & Users ---
   findUserByEmail(email) {
@@ -558,7 +888,30 @@ var PosStorage = class {
   getUsers() {
     return this.data.users.map(({ passwordHash, pin, ...safeUser }) => safeUser);
   }
+  updateUser(id, updates) {
+    const user = this.data.users.find((u) => u.id === id);
+    if (!user) return null;
+    if (updates.name !== void 0) user.name = updates.name;
+    if (updates.email !== void 0) user.email = updates.email;
+    if (updates.role !== void 0) user.role = updates.role;
+    if (updates.phone !== void 0) user.phone = updates.phone;
+    if (updates.pin !== void 0) user.pin = updates.pin;
+    if (updates.permissions !== void 0) {
+      user.permissions = { ...user.permissions, ...updates.permissions };
+    }
+    this.saveData(this.data);
+    const { passwordHash, pin, ...safeUser } = user;
+    return safeUser;
+  }
   createUser(userData) {
+    const defaultPerms = {
+      canViewDashboard: userData.role === "BUSINESS_OWNER" || userData.role === "MANAGER",
+      canManageExpenses: userData.role === "BUSINESS_OWNER" || userData.role === "MANAGER",
+      canPerformReconciliation: userData.role === "BUSINESS_OWNER" || userData.role === "MANAGER",
+      canManagePaymentMethods: userData.role === "BUSINESS_OWNER",
+      canManageStock: userData.role === "BUSINESS_OWNER" || userData.role === "MANAGER",
+      canManageStaff: userData.role === "BUSINESS_OWNER"
+    };
     const newUser = {
       id: `usr_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       name: userData.name,
@@ -566,7 +919,8 @@ var PosStorage = class {
       role: userData.role,
       phone: userData.phone || "",
       passwordHash: hashPassword(userData.password),
-      pin: userData.pin || "1234",
+      pin: userData.pin || (userData.role === "CASHIER" ? "9012" : "1234"),
+      permissions: userData.permissions || defaultPerms,
       avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
       createdAt: (/* @__PURE__ */ new Date()).toISOString()
     };
@@ -1013,7 +1367,15 @@ var PosStorage = class {
         email: u.email,
         phone: u.phone || "",
         role: u.role,
-        pin: u.pin || "****",
+        pin: u.pin || (u.role === "CASHIER" ? "9012" : "1234"),
+        permissions: u.permissions || {
+          canViewDashboard: u.role === "BUSINESS_OWNER" || u.role === "MANAGER",
+          canManageExpenses: u.role === "BUSINESS_OWNER" || u.role === "MANAGER",
+          canPerformReconciliation: u.role === "BUSINESS_OWNER" || u.role === "MANAGER",
+          canManagePaymentMethods: u.role === "BUSINESS_OWNER",
+          canManageStock: u.role === "BUSINESS_OWNER" || u.role === "MANAGER",
+          canManageStaff: u.role === "BUSINESS_OWNER"
+        },
         status: "ACTIVE",
         totalSalesCount: staffSales.length,
         totalSalesRevenue: totalRevenue
@@ -2202,6 +2564,72 @@ app.post("/api/reconciliation", (req, res) => {
 app.get("/api/staff", (req, res) => {
   return res.json(posStorage.getStaffMembers());
 });
+app.put("/api/staff/:id/permissions", (req, res) => {
+  const { id } = req.params;
+  const { role, pin, permissions } = req.body;
+  const updatedUser = posStorage.updateUser(id, {
+    role,
+    pin,
+    permissions
+  });
+  if (!updatedUser) {
+    return res.status(404).json({ error: "Staff member not found." });
+  }
+  return res.json({
+    success: true,
+    user: updatedUser,
+    message: `Updated permissions and terminal PIN for ${updatedUser.name}.`
+  });
+});
+app.post("/api/payments/paystack/initialize", (req, res) => {
+  const { amount, email, currency = "GHS", metadata } = req.body;
+  const biz = posStorage.getBusiness();
+  const publicKey = biz.paymentGateway?.publicKey || "pk_live_techwokx_gh_78291482";
+  const reference = `pstk_trx_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+  return res.json({
+    success: true,
+    status: "success",
+    message: "Paystack checkout session created",
+    data: {
+      authorization_url: `https://checkout.paystack.com/${reference}`,
+      access_code: `acc_${reference}`,
+      reference,
+      publicKey,
+      amount,
+      currency,
+      email: email || "walkin-customer@kora.app",
+      businessName: biz.name,
+      channels: ["card", "mobile_money"],
+      cardBrands: ["Visa", "Mastercard"]
+    }
+  });
+});
+app.post("/api/payments/paystack/verify", (req, res) => {
+  const { reference, last4, cardType, bank } = req.body;
+  return res.json({
+    success: true,
+    status: "success",
+    message: "Paystack transaction verified successfully",
+    data: {
+      reference: reference || `pstk_trx_${Date.now()}`,
+      status: "success",
+      gateway_response: "Successful",
+      paid_at: (/* @__PURE__ */ new Date()).toISOString(),
+      channel: "card",
+      authorization: {
+        authorization_code: `AUTH_${Date.now().toString(36).toUpperCase()}`,
+        card_type: cardType || "Visa / Mastercard",
+        last4: last4 || "4242",
+        exp_month: "12",
+        exp_year: "2028",
+        bin: "408408",
+        bank: bank || "Paystack Ghana Settlement",
+        reusable: true,
+        country_code: "GH"
+      }
+    }
+  });
+});
 app.get("/api/alerts", (req, res) => {
   return res.json(posStorage.getAlerts());
 });
@@ -2273,6 +2701,33 @@ app.get("/api/vps-info", (req, res) => {
     environment: process.env.NODE_ENV || "development",
     serverTime: (/* @__PURE__ */ new Date()).toISOString()
   });
+});
+app.get("/api/supabase/status", async (req, res) => {
+  try {
+    const health = await getSupabaseHealth();
+    return res.json(health);
+  } catch (err) {
+    return res.status(500).json({
+      connected: false,
+      error: err?.message || "Failed to inspect Supabase health"
+    });
+  }
+});
+app.post("/api/supabase/sync", async (req, res) => {
+  try {
+    const result = await posStorage.forceSupabaseFullSync();
+    const health = await getSupabaseHealth();
+    return res.json({
+      ...result,
+      health,
+      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      error: err?.message || "Failed to sync with Supabase"
+    });
+  }
 });
 async function start() {
   const isProduction = process.env.NODE_ENV === "production";

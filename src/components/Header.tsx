@@ -19,6 +19,7 @@ import {
   Printer
 } from 'lucide-react';
 import { User, BusinessProfile } from '../types';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface HeaderProps {
   business: BusinessProfile;
@@ -51,6 +52,7 @@ export const Header: React.FC<HeaderProps> = ({
   unreadAlertsCount,
   onOpenBusinessSetup,
   onOpenWhatsAppReport,
+  onOpenPrinter,
   onOpenAlerts,
   onOpenVpsGuide,
   onOpenAuth,
@@ -116,8 +118,8 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white font-bold text-base">
               <Sparkles className="w-4 h-4 fill-white text-white" />
             </div>
-            <span className="text-xs sm:text-sm font-semibold tracking-tight text-slate-300 font-sans hidden sm:inline">
-              Wing POS
+            <span className="text-xs sm:text-sm font-bold tracking-tight text-white font-sans hidden sm:inline">
+              WingPOS
             </span>
           </button>
 
@@ -258,15 +260,19 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right: Actions & User Profile */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Landing Page & Pricing Button */}
+          {/* PWA Mobile / Desktop Install Button */}
+          <PWAInstallButton variant="header" />
+
+          {/* Landing Page Button - Visible on all devices */}
           {onNavigateToLanding && (
             <button
               onClick={onNavigateToLanding}
-              className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#122834] hover:bg-[#1a3848] text-slate-300 hover:text-white text-xs font-semibold border border-[#1b3d4e] transition-all cursor-pointer"
-              title="View platform features, pricing & FAQ"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+              title="View WingPOS Landing Page"
             >
-              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Landing & Pricing</span>
+              <Sparkles className="w-3.5 h-3.5 text-white" />
+              <span className="hidden sm:inline">Landing Page</span>
+              <span className="sm:hidden">Landing</span>
             </button>
           )}
 

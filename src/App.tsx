@@ -24,6 +24,9 @@ import { Toast } from './components/Toast';
 import { LandingPage } from './components/LandingPage';
 import { OnboardingPage } from './components/OnboardingPage';
 import { BusinessLoginPage } from './components/BusinessLoginPage';
+import { PWAMobileInstallPrompt } from './components/PWAMobileInstallPrompt';
+import { PWAInstalledNotification } from './components/PWAInstalledNotification';
+import { OfflineIndicator } from './components/OfflineIndicator';
 import { 
   User, 
   BusinessProfile, 
@@ -38,7 +41,34 @@ import {
 export type AppView = 'landing' | 'app' | 'onboarding' | 'login';
 
 export default function App() {
-  const [currentView, setCurrentView] = useState<AppView>('landing');
+  const [currentView, setCurrentView] = useState<AppView>(() => {
+    if (typeof window !== 'undefined') {
+      const searchParams = new URLSearchParams(window.location.search);
+      const v = searchParams.get('view') as AppView | null;
+      if (v && ['landing', 'app', 'onboarding', 'login'].includes(v)) {
+        return v;
+      }
+      const hash = window.location.hash.replace('#', '') as AppView;
+      if (hash && ['landing', 'app', 'onboarding', 'login'].includes(hash)) {
+        return hash;
+      }
+    }
+    return 'landing';
+  });
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '') as AppView;
+      if (hash && ['landing', 'app', 'onboarding', 'login'].includes(hash)) {
+        setCurrentView(hash);
+      } else if (!window.location.hash) {
+        setCurrentView('landing');
+      }
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
   const [onboardingPlan, setOnboardingPlan] = useState<SubscriptionPlan>('BUSINESS_PRO');
   const [currentTab, setCurrentTab] = useState<ActiveTab>('overview');
   const [selectedDate, setSelectedDate] = useState<string>(() => {
@@ -340,7 +370,7 @@ export default function App() {
 
   if (currentView === 'landing') {
     return (
-      <div className="min-h-screen bg-[#08151c] text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-white">
+      <div className="min-h-screen bg-white text-slate-800 flex flex-col font-sans selection:bg-emerald-500 selection:text-white">
         <LandingPage
           business={business}
           onNavigateToOnboarding={(plan) => {
@@ -357,6 +387,9 @@ export default function App() {
           onShowToast={(msg) => setToastMessage(msg)}
         />
         <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+        <PWAMobileInstallPrompt />
+        <PWAInstalledNotification />
+        <OfflineIndicator />
       </div>
     );
   }
@@ -374,6 +407,9 @@ export default function App() {
           onShowToast={(msg) => setToastMessage(msg)}
         />
         <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+        <PWAMobileInstallPrompt />
+        <PWAInstalledNotification />
+        <OfflineIndicator />
       </div>
     );
   }
@@ -391,6 +427,9 @@ export default function App() {
           onShowToast={(msg) => setToastMessage(msg)}
         />
         <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+        <PWAMobileInstallPrompt />
+        <PWAInstalledNotification />
+        <OfflineIndicator />
       </div>
     );
   }
@@ -595,6 +634,11 @@ export default function App() {
 
       {/* Toast Notification */}
       <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+
+      {/* PWA Mobile First-Time Install Banner, Notification & Offline Status */}
+      <PWAMobileInstallPrompt />
+      <PWAInstalledNotification />
+      <OfflineIndicator />
     </div>
   );
 }

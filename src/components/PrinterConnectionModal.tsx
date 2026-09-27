@@ -103,8 +103,8 @@ Time:     ${new Date().toLocaleTimeString()}
 1234567890 ABCDEFGHIJKLMNOPQRST
 TEST COMPLETE - FEED OK
 ================================
-KORA RETAIL OPERATING SYSTEM
-pos.kora.app
+WINGPOS BUSINESS INTELLIGENCE
+wingpos.app
     `.trim();
 
     printerManager.printToThermalWindow(testContent, 'Printer Test Slip');

@@ -18,6 +18,11 @@ import {
   PaymentProvider,
   SubscriptionPlan
 } from '../types';
+import { 
+  saveStateToSupabase, 
+  loadStateFromSupabase, 
+  initSupabaseSchema 
+} from './supabaseDb';
 
 export interface DatabaseSchema {
   business: BusinessProfile;
@@ -493,9 +498,63 @@ const DEFAULT_SEED_DATA: DatabaseSchema = {
 
 class PosStorage {
   private data: DatabaseSchema;
+  private isSupabaseSyncing: boolean = false;
 
   constructor() {
     this.data = this.loadData();
+    // Initialize Supabase PostgreSQL database schemas and hydrate state
+    this.initSupabaseSync();
+  }
+
+  public async initSupabaseSync() {
+    if (this.isSupabaseSyncing) return;
+    this.isSupabaseSyncing = true;
+    try {
+      const initialized = await initSupabaseSchema();
+      if (initialized) {
+        const remoteState = await loadStateFromSupabase();
+        if (remoteState && remoteState.business && remoteState.business.id) {
+          console.log('[PosStorage] Successfully hydrated POS state from Supabase PostgreSQL');
+          this.data = remoteState;
+          this.writeLocalFile(this.data);
+        } else {
+          console.log('[PosStorage] Initializing remote Supabase PostgreSQL with local dataset');
+          await saveStateToSupabase(this.data);
+        }
+      }
+    } catch (err: any) {
+      console.warn('[PosStorage] Supabase sync initialization warning:', err?.message || err);
+    } finally {
+      this.isSupabaseSyncing = false;
+    }
+  }
+
+  public async forceSupabaseFullSync(): Promise<{ success: boolean; message: string }> {
+    try {
+      await initSupabaseSchema();
+      const ok = await saveStateToSupabase(this.data);
+      return { 
+        success: ok, 
+        message: ok ? 'Successfully synced all sales, stock, and expenses to Supabase!' : 'Failed to write to Supabase' 
+      };
+    } catch (err: any) {
+      return { success: false, message: err?.message || 'Sync error' };
+    }
+  }
+
+  public getRawData(): DatabaseSchema {
+    return this.data;
+  }
+
+  private writeLocalFile(data: DatabaseSchema) {
+    try {
+      if (!fs.existsSync(DATA_DIR)) {
+        fs.mkdirSync(DATA_DIR, { recursive: true });
+      }
+      fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+    } catch (err) {
+      console.error('Failed to write local database file:', err);
+    }
   }
 
   private loadData(): DatabaseSchema {
@@ -572,14 +631,11 @@ class PosStorage {
   }
 
   private saveData(data: DatabaseSchema) {
-    try {
-      if (!fs.existsSync(DATA_DIR)) {
-        fs.mkdirSync(DATA_DIR, { recursive: true });
-      }
-      fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
-    } catch (err) {
-      console.error('Failed to save database file:', err);
-    }
+    this.writeLocalFile(data);
+    // Mirror to Supabase PostgreSQL asynchronously
+    saveStateToSupabase(data).catch((err) => {
+      console.warn('[PosStorage] Supabase PostgreSQL sync warning:', err?.message || err);
+    });
   }
 
   // --- Auth & Users ---
